@@ -39,7 +39,7 @@ class DataLoader:
 
     def get_train_dataloader(self):
         infos = []
-        with open(self._config.val_txt_path) as f:
+        with open(self._config.train_txt_path) as f:
             for line in f:
                 infos.append(line)
             self.train_len = len(infos)
