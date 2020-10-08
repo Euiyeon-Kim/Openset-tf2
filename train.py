@@ -6,12 +6,12 @@ import tensorflow as tf
 from tqdm import tqdm
 
 from config import Config, ModelStructure
-from models.modules.gradcam import gradCAM
+from models.modules.gradcam import GuidedGradCAM
 from models.vanilla_classifier import VanillaClassifier
-from utils import get_dataloader
+from dataloader.tfds import get_train_dataloader
 
 
-def train(classifier, dataloader, cam_layer):
+def train(classifier, dataloader):
     cam_dir = f'{Config.results_dir}/cam'
     log_dir = f'{Config.results_dir}/logs'
     chkpt_dir = f'{Config.results_dir}/chkpt'
@@ -35,23 +35,25 @@ def train(classifier, dataloader, cam_layer):
                 writer.flush()
 
             # Save GradCAM
-            # if (epoch + 1) % Config.epochs_to_save_gradCAM == 0:
-            #     preds = classifier.predict_on_batch(img)
-            #     predicted_class = preds.argmax(axis=1)[0]
-            #     real_class = np.argmax(label.numpy(), axis=1)[0]
-            #     sample_img, cam_img = gradCAM(classifier, cam_layer, np.expand_dims(img[0], axis=0), predicted_class)
-            #
-            #     cv2.imwrite(f'{cam_dir}/{epoch}_{predicted_class}_{real_class}_sample.png', sample_img)
-            #     cv2.imwrite(f'{cam_dir}/{epoch}_{predicted_class}_{real_class}_cam.png', cam_img)
+            if (epoch + 1) % Config.epochs_to_save_gradCAM == 0:
+                cam_model = GuidedGradCAM(classifier, Config.cam_layer)
+                preds = classifier.predict_on_batch(img)
+                predicted_class = preds.argmax(axis=1)[0]
+                real_class = np.argmax(label.numpy(), axis=1)[0]
+                sample_img, cam_img = cam_model.generate(np.expand_dims(img[0], axis=0), predicted_class)
+
+                cv2.imwrite(f'{cam_dir}/{epoch}_{predicted_class}_{real_class}_sample.png', sample_img)
+                cv2.imwrite(f'{cam_dir}/{epoch}_{predicted_class}_{real_class}_cam.png', cam_img)
+
+                del cam_model
 
             # Save weights
             if (epoch+1) % Config.epochs_to_save_weights == 0 or (epoch+1) == Config.num_epochs:
-                save_path = f"{chkpt_dir}/classifier-{epoch+1}.ckpt"
-                classifier.save_weights(save_path)
+                classifier.save_weights(f"{chkpt_dir}/{str(Config.structure)}-classifier-{epoch+1}.h5")
 
 
 if __name__ == '__main__':
-    train_ds, test_ds = get_dataloader(Config.dataset_name, Config)
+    train_ds = get_train_dataloader(Config.dataset_name, Config)
 
     # Define model
     classifier = None
@@ -67,4 +69,4 @@ if __name__ == '__main__':
     if Config.classifier_weight_path:
         classifier.load_weights(Config.classifier_weight_path)
 
-    train(classifier, train_ds, Config.cam_layer)
+    train(classifier, train_ds)

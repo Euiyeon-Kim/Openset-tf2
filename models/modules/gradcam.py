@@ -29,36 +29,17 @@ class GuidedGradCAM:
         weights = tf.reduce_mean(guided_grads, axis=(0, 1))
         cam = tf.reduce_sum(tf.multiply(weights, conv_output), axis=-1)
 
+        # Normalization
+        heatmap = cv2.resize(cam.numpy(), (w, h))
+        numer = heatmap - np.min(heatmap)
+        denom = (heatmap.max() - heatmap.min()) + self.eps
+        heatmap = numer / denom
+        heatmap = (heatmap * 255).astype("uint8")
 
+        # Visualization
+        sample_img = cv2.cvtColor(denormalize_img(img)[0].astype('uint8'), cv2.COLOR_RGB2BGR)
+        heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+        cam_img = cv2.addWeighted(sample_img, 0.7, heatmap, 0.3, 0)
 
+        return sample_img, cam_img
 
-def gradCAM(model, visualize_layer, img, class_idx, eps=1e-8):
-    _, h, w, _ = img.shape
-    cam_model = Model(model.inputs, [model.get_layer(visualize_layer).output, model.output])
-
-    with tf.GradientTape() as tape:
-        conv_outputs, predictions = cam_model(img)
-        loss = predictions[:, class_idx]
-    grads = tape.gradient(loss, conv_outputs)
-
-    castConvOutputs = tf.cast(conv_outputs > 0, "float32")
-    castGrads = tf.cast(grads > 0, "float32")
-    guidedGrads = castConvOutputs * castGrads * grads
-
-    convOutputs = conv_outputs[0]
-    guidedGrads = guidedGrads[0]
-
-    weights = tf.reduce_mean(guidedGrads, axis=(0, 1))
-    cam = tf.reduce_sum(tf.multiply(weights, convOutputs), axis=-1)
-
-    heatmap = cv2.resize(cam.numpy(), (w, h))
-    numer = heatmap - np.min(heatmap)
-    denom = (heatmap.max() - heatmap.min()) + eps
-    heatmap = numer / denom
-    heatmap = (heatmap * 255).astype("uint8")
-
-    sample_img = denormalize_img(img)[0].astype('uint8')
-    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-    cam_img = cv2.addWeighted(sample_img, 0.9, heatmap, 1, 0)
-
-    return sample_img, cam_img
