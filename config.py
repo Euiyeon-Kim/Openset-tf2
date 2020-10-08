@@ -14,6 +14,7 @@ class ModelStructure(Enum):
 class Config:
     # Basics
     n_gpus = 1
+    class_wise_acc = True
     epochs_to_save_gradCAM = 1
     epochs_to_save_weights = 10
 
@@ -21,9 +22,21 @@ class Config:
     threshold = 0.9
 
     # Data
-    n_workers = 4
-    dataset_name = 'cifar10'
-    input_shape = (64, 64, 3)
+    n_workers = 8
+    input_shape = (224, 224, 3)               # Resize
+    # TFDS
+    use_tfds = False
+    tfds_dir = 'data'
+    dataset_name = 'cifar10'                  # TFDS dataset name
+    # ImageNet
+    root_dir = 'data/imagenet'
+    train_txt_path = 'data/imagenet_LT/imagenet_oltr_train.txt'
+    val_txt_path = 'data/imagenet_LT/imagenet_oltr_val.txt'
+    test_txt_path = 'data/imagenet_LT/imagenet_oltr_test.txt'
+    openset_txt_path = 'data/imagenet_LT/imagenet_oltr_open.txt'
+    num_classes = 1000
+    imagenet_resize = [256, 256]
+    imagenet_crop = [224, 224, 3]
 
     # Model
     structure = ModelStructure.VANILLA
@@ -37,13 +50,12 @@ class Config:
     cam_layer = 'shared_conv_2'
 
     # Directories
-    root_dir = 'data'
-    results_dir = 'exps/test'
-    classifier_weight_path = 'exps/test/chkpt/vanilla-classifier-30.h5'
+    results_dir = 'exps/tmp_imgnet'
+    classifier_weight_path = None #'exps/test/chkpt/vanilla-classifier-30.h5'
 
     # Trainer
     num_epochs = 30
-    batch_size = 16
+    batch_size = 64
     lr = 1e-3
     beta1 = 0.5
     beta2 = 0.999

@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 from config import Config, ModelStructure
 from models.vanilla_classifier import VanillaClassifier
-from dataloader.tfds import get_test_dataloader
+from dataloader.tfds import get_infer_dataloader
 from utils import openset_acc, closeset_acc
 
 
@@ -42,7 +42,7 @@ def test_closed(classifier, dataloader):
 
 if __name__ == '__main__':
     # Label should be idx not one-hot vector
-    test_ds = get_test_dataloader(Config.dataset_name, Config)
+    infer_ds = get_infer_dataloader(Config.dataset_name, Config)
 
     # Define model
     classifier = None
@@ -54,6 +54,6 @@ if __name__ == '__main__':
         raise Exception('Need classifier weight path to load')
     classifier.load_weights(Config.classifier_weight_path)
 
-    test_opened(classifier, test_ds)
+    test_opened(classifier, infer_ds)
 
 

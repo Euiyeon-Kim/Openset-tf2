@@ -5,10 +5,13 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
+from inference import test_opened
 from config import Config, ModelStructure
 from models.modules.gradcam import GuidedGradCAM
 from models.vanilla_classifier import VanillaClassifier
 from dataloader.tfds import get_train_dataloader
+from dataloader.imagenet_dataloader import DataLoader
+from utils import get_ms
 
 
 def train(classifier, dataloader):
@@ -24,15 +27,17 @@ def train(classifier, dataloader):
 
     classifier.summary()
     with writer.as_default():
-
-        for epoch in tqdm(range(Config.num_epochs), desc="Training Classifier"):
-            for step, (img, label) in enumerate(dataloader):
+        for epoch in range(Config.num_epochs):
+            for step in tqdm(range(Config.num_steps), desc=f"Epoch {epoch}"):
+                # Train
+                img, label = next(dataloader)
                 losses = classifier.train_on_batch(img, label)
 
                 # Log losses
                 for loss_name, loss in zip(loss_names, losses):
                     tf.summary.scalar(loss_name, loss, step=epoch*Config.num_steps+step)
                 writer.flush()
+            print(losses)
 
             # Save GradCAM
             if (epoch + 1) % Config.epochs_to_save_gradCAM == 0:
@@ -53,20 +58,25 @@ def train(classifier, dataloader):
 
 
 if __name__ == '__main__':
-    train_ds = get_train_dataloader(Config.dataset_name, Config)
+    # Load dataloaders
+    if Config.use_tfds:
+        train_dataloader, test_dataloader = get_train_dataloader(Config.dataset_name, Config)
+        train_dataloader = iter(train_dataloader)
+    else:
+        ms = get_ms()
+        dataloader = DataLoader(Config, ms)
+        train_dataloader = iter(dataloader.get_train_dataloader())
+        Config.num_steps = dataloader.train_len // dataloader.get_batch_size()
 
     # Define model
     classifier = None
     if Config.structure == ModelStructure.VANILLA:
         classifier = VanillaClassifier(Config).build_model()
-    # elif Config.structure == ModelStructure.DEFORM:
-    # elif Config.structure == ModelStructure.SENET:
-    # elif Config.structure == ModelStructure.SPNORM:
-    # elif Config.structure == ModelStructure.CBAM:
-    # else:
-    #     raise Exception("Not implemented model structure")
+    else:
+        raise Exception("Not implemented model structure")
 
     if Config.classifier_weight_path:
         classifier.load_weights(Config.classifier_weight_path)
 
-    train(classifier, train_ds)
+    train(classifier, train_dataloader)
+    # test_opened(classifier, test_dataloader)
