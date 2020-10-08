@@ -1,3 +1,5 @@
+from functools import partial
+
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -20,13 +22,15 @@ def get_activation(activation):
 
 
 def normalize_img(img, label):
-    normalized = tf.cast(img, tf.float32) / 127.5 - 1
-    resized = tf.image.resize(normalized, (64, 64))
-    return resized, label
+    return tf.cast(img, tf.float32) / 127.5 - 1, label
 
 
 def denormalize_img(img):
     return (((img*-1) + 1.) * 127.5).astype(np.uint8)
+
+
+def resize_img(img, label, size):
+    return tf.image.resize(img, size), label
 
 
 def get_dataloader(name, config):
@@ -37,11 +41,15 @@ def get_dataloader(name, config):
                                              as_supervised=True,
                                              with_info=True)
 
-    config.input_shape = (64, 64, 3) #ds_info.features['image'].shape
     config.num_classes = ds_info.features['label'].num_classes
     config.num_steps = ds_info.splits['train'].num_examples // config.batch_size
 
+    # Normalization
     train_ds = train_ds.map(normalize_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    # Resize image
+    if config.input_shape != ds_info.features['image'].shape:
+        resize_function = partial(resize_img, size=config.input_shape)
+        train_ds = train_ds.map(resize_function, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     train_ds = train_ds.cache()
     train_ds = train_ds.shuffle(ds_info.splits['train'].num_examples)
     train_ds = train_ds.batch(config.batch_size)

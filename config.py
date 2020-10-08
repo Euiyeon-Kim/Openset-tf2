@@ -18,22 +18,26 @@ class Config:
 
     # Data
     n_workers = 4
+    dataset_name = 'cifar10'
+    input_shape = (32, 32, 3)
 
     # Model
     structure = ModelStructure.VANILLA
     kernel_size = 3
     strides = 2
     activation = 'lrelu'
-    shared_conv_channels = [32, 64, 128, 256]
-    dense_branch_units = [512, 256]
+    shared_conv_channels = [32, 64, 128]
+    dense_branch_units = [256, 128]
+    cam_layer = 'shared_conv_2'
 
     # Directories
     root_dir = 'data'
-    results_dir = f'exps/svhn'
+    results_dir = 'exps/cifar10'
+    classifier_weight_path = 'exps/cifar10/'
 
     # Trainer
-    num_epochs = 1000
-    batch_size = 64
+    num_epochs = 30
+    batch_size = 256
     lr = 1e-3
     beta1 = 0.5
     beta2 = 0.999
