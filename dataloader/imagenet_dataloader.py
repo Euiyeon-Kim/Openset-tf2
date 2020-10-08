@@ -57,6 +57,26 @@ class DataLoader:
             ds = self._ms.experimental_distribute_dataset(ds)
         return ds
 
+    def get_val_dataloader(self):
+        infos = []
+        with open(self._config.val_txt_path) as f:
+            for line in f:
+                infos.append(line)
+            self.train_len = len(infos)
+
+        data_generator = partial(self._data_generator, infos=infos)
+        load_fn = partial(load_img_fn, resize=self._config.imagenet_resize, crop=self._config.imagenet_crop, num_classes=self._config.num_classes)
+        ds = tf.data.Dataset.from_generator(data_generator,
+                                            output_types=(tf.string, tf.int32),
+                                            output_shapes=((), ()))
+        ds = ds.map(load_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        ds = ds.repeat()
+        ds = ds.batch(self.get_batch_size(), drop_remainder=True)
+        ds = ds.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+        if self._ms is not None:
+            ds = self._ms.experimental_distribute_dataset(ds)
+        return ds
+
     def get_batch_size(self):
         if self._ms is None:
             batch_size = self._config.batch_size

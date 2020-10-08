@@ -39,7 +39,7 @@ class GuidedGradCAM:
         # Visualization
         sample_img = cv2.cvtColor(denormalize_img(img)[0].astype('uint8'), cv2.COLOR_RGB2BGR)
         heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-        cam_img = cv2.addWeighted(sample_img, 0.7, heatmap, 0.3, 0)
+        cam_img = cv2.addWeighted(sample_img, 0.5, heatmap, 0.5, 0)
 
         return sample_img, cam_img
 

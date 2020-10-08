@@ -14,7 +14,6 @@ class ModelStructure(Enum):
 class Config:
     # Basics
     n_gpus = 1
-    class_wise_acc = True
     epochs_to_save_gradCAM = 1
     epochs_to_save_weights = 10
 
@@ -43,20 +42,20 @@ class Config:
     kernel_size = 3
     strides = 2
     activation = 'lrelu'
-    shared_conv_channels = [32, 64, 128]
-    dense_branch_units = [256, 128]
+    shared_conv_channels = [32, 64, 128, 256, 512]
+    dense_branch_units = [512, 256]
 
     # GradCAM
     cam_layer = 'shared_conv_2'
 
     # Directories
-    results_dir = 'exps/tmp_imgnet'
-    classifier_weight_path = None #'exps/test/chkpt/vanilla-classifier-30.h5'
+    results_dir = 'exps/vanilla_imagenet'
+    classifier_weight_path = None
 
     # Trainer
-    num_epochs = 30
-    batch_size = 64
-    lr = 1e-3
+    num_epochs = 1000
+    batch_size = 256
+    lr = 1e-4
     beta1 = 0.5
     beta2 = 0.999
 
