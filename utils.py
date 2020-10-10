@@ -42,6 +42,9 @@ def resize_img(img, label, size):
 
 
 def openset_acc(pred, label):
+    # TP FP
+    # TN FN
+    confusion_mat = np.zeros((2, 2))
     total_acc = np.sum(pred == label) / len(label)
 
     real_openset = tf.cast(label == -1, "int64")
@@ -49,13 +52,19 @@ def openset_acc(pred, label):
     if np.sum(real_openset) == 0:
         open_acc = 0
     else:
-        pred_openset = tf.cast(pred == -1, "int64")
-        open_acc = np.sum(np.logical_and(pred_openset, real_openset)) / np.sum(real_openset)
+        pred_as_openset = tf.cast(pred == -1, "int64")
+        openset_preds = np.logical_and(real_openset, pred_as_openset)
+        confusion_mat[1][1] = np.sum(real_openset != openset_preds)
+        confusion_mat[1][0] = np.sum(real_openset) - confusion_mat[1][1]
+        open_acc = np.sum(np.logical_and(pred_as_openset, real_openset)) / np.sum(real_openset)
 
     pred[pred == -1] = -2
-    close_acc = np.sum(pred == label) / (len(label) - np.sum(real_openset))
+    true_pos = np.sum(pred == label)
+    close_acc = true_pos / (len(label) - np.sum(real_openset))
+    confusion_mat[0][0] = true_pos
+    confusion_mat[0][1] = len(label) - np.sum(real_openset) - true_pos
 
-    return total_acc, open_acc, close_acc, np.sum(real_openset), np.sum(pred_openset)
+    return total_acc, open_acc, close_acc, np.sum(real_openset), np.sum(pred_as_openset), confusion_mat
 
 
 def closeset_acc(pred, label):

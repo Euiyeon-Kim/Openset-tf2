@@ -14,14 +14,14 @@ class DeformableClassifier:
     def define_model(self):
         input_layer = Input(shape=self.config.input_shape)
 
-        shared_conv = conv_blocks(channels=self.config.deform_conv_channels[:2],
+        shared_conv = conv_blocks(channels=self.config.deform_conv_channels[:3],
                                   kernel_size=self.config.kernel_size,
                                   strides=self.config.strides,
                                   activation=self.config.activation,
                                   name='shared',
                                   name_offset=0)(input_layer)
 
-        shared_conv = deform_conv_block(channels=self.config.deform_conv_channels[2:-1],
+        shared_conv = deform_conv_block(channels=self.config.deform_conv_channels[3:-1],
                                         deform_channels=self.config.deform_conv_offset_channels,
                                         kernel_size=self.config.kernel_size,
                                         strides=self.config.strides,

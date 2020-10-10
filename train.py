@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import cv2
 import numpy as np
@@ -45,21 +46,28 @@ def train(classifier, train_dataloader, val_dataloader):
                 total_accs = []
                 open_accs = []
                 close_accs = []
+                confusion_mats = np.zeros((2, 2))
                 for val_img, val_label in val_dataloader:
                     val_probs = classifier.predict(val_img)
                     val_preds = np.argmax(val_probs, axis=-1)
                     val_probs = np.max(val_probs, axis=-1)
                     val_preds[val_probs < Config.threshold] = -1
 
-                    total_acc, open_acc, close_acc, _, _ = openset_acc(val_preds, val_label)
+                    total_acc, open_acc, close_acc, _, _, confusion_mat = openset_acc(val_preds, val_label)
 
                     total_accs.append(total_acc)
                     open_accs.append(open_acc)
                     close_accs.append(close_acc)
+                    confusion_mats += confusion_mat
+
+                val_presision = confusion_mats[0][0] / (confusion_mats[0][0] + confusion_mats[0][1])
+                val_recall = confusion_mats[0][0] / (confusion_mats[0][0] + confusion_mats[1][1])
+                val_f1 = 2 * ((val_presision * val_recall) / (val_presision + val_recall + 1e-12))
 
                 tf.summary.scalar('val/total_acc', np.mean(total_accs), step=epoch)
                 tf.summary.scalar('val/open_acc', np.mean(open_accs), step=epoch)
                 tf.summary.scalar('val/close_acc', np.mean(close_accs), step=epoch)
+                tf.summary.scalar('val/f1_score', val_f1, step=epoch)
 
                 if np.mean(total_accs) > best_val_acc:
                     best_val_acc = np.mean(total_accs)
@@ -85,7 +93,7 @@ def train(classifier, train_dataloader, val_dataloader):
 
 if __name__ == '__main__':
     os.makedirs(Config.results_dir, exist_ok=True)
-
+    shutil.copyfile('config.py', f'{Config.results_dir}/config.py')
     # Load dataloaders
     if Config.use_tfds:
         train_dataloader, val_dataloader = get_train_dataloader(Config.dataset_name, Config)

@@ -21,11 +21,11 @@ class Config:
     shared_conv_channels = [64, 128, 256, 512]
     dense_branch_units = [512, 256]
     # Deform
-    deform_conv_channels = [32, 64, 128, 256]
-    deform_conv_offset_channels = [64]
+    deform_conv_channels = [32, 64, 128, 256, 512]
+    deform_conv_offset_channels = [128, 256]
 
     # GradCAM
-    cam_layer = 'shared_conv_3'
+    cam_layer = 'shared_conv_4'
 
     # Basics
     n_gpus = 1
@@ -39,13 +39,13 @@ class Config:
 
     # Data
     n_workers = 8
-    batch_size = 16
+    batch_size = 64
     split_weight = (9, 1)
-    input_shape = (64, 64, 3)               # Resize
+    input_shape = (224, 224, 3)               # Resize
     # TFDS
-    use_tfds = True
+    use_tfds = False
     tfds_dir = 'data'
-    dataset_name = 'cifar10'                  # TFDS dataset name
+    dataset_name = 'cifar100'                  # TFDS dataset name
     # ImageNet
     root_dir = 'data/imagenet'
     openset_dir = 'data/imagenet_LT/ImageNet_LT_open'
@@ -58,8 +58,8 @@ class Config:
     imagenet_crop = [224, 224, 3]
 
     # Directories
-    results_dir = 'exps/delete'
-    classifier_weight_path = None
+    results_dir = 'exps/deform_imagenet'
+    classifier_weight_path = None #'exps/delete/chkpt/deformable-classifier-best.h5'
 
     # Trainer
     num_epochs = 1000
