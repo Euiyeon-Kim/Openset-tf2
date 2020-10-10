@@ -11,7 +11,7 @@ from models.vanilla_classifier import VanillaClassifier
 from models.deformable_classifier import DeformableClassifier
 from dataloader.tfds import get_train_dataloader
 from dataloader.imagenet_dataloader import DataLoader
-from utils import get_ms
+from utils import get_ms, openset_acc
 
 
 def train(classifier, train_dataloader, val_dataloader):
@@ -41,19 +41,29 @@ def train(classifier, train_dataloader, val_dataloader):
             print(losses)
 
             # Validation
-            # if (epoch + 1) % Config.epochs_to_validate == 0:
-            #     val_losses = []
-            #     val_accs = []
-            #     for val_img, val_label in val_dataloader:
-            #         val_loss, val_acc = classifier.test_on_batch(val_img, val_label)
-            #         val_losses.append(val_loss)
-            #         val_accs.append(val_acc)
-            #     tf.summary.scalar('val/ce_loss', np.mean(val_losses), step=epoch)
-            #     tf.summary.scalar('val/acc', np.mean(val_accs), step=epoch)
-            #
-            #     if np.mean(val_accs) > best_val_acc:
-            #         best_val_acc = np.mean(val_accs)
-            #         classifier.save_weights(f"{chkpt_dir}/{str(Config.structure)}-classifier-best.h5")
+            if (epoch + 1) % Config.epochs_to_validate == 0:
+                total_accs = []
+                open_accs = []
+                close_accs = []
+                for val_img, val_label in val_dataloader:
+                    val_probs = classifier.predict(val_img)
+                    val_preds = np.argmax(val_probs, axis=-1)
+                    val_probs = np.max(val_probs, axis=-1)
+                    val_preds[val_probs < Config.threshold] = -1
+
+                    total_acc, open_acc, close_acc, _, _ = openset_acc(val_preds, val_label)
+
+                    total_accs.append(total_acc)
+                    open_accs.append(open_acc)
+                    close_accs.append(close_acc)
+
+                tf.summary.scalar('val/total_acc', np.mean(total_accs), step=epoch)
+                tf.summary.scalar('val/open_acc', np.mean(open_accs), step=epoch)
+                tf.summary.scalar('val/close_acc', np.mean(close_accs), step=epoch)
+
+                if np.mean(total_accs) > best_val_acc:
+                    best_val_acc = np.mean(total_accs)
+                    classifier.save_weights(f"{chkpt_dir}/{str(Config.structure)}-classifier-best.h5")
 
             # Save GradCAM
             if (epoch + 1) % Config.epochs_to_save_gradCAM == 0:
@@ -74,11 +84,13 @@ def train(classifier, train_dataloader, val_dataloader):
 
 
 if __name__ == '__main__':
+    os.makedirs(Config.results_dir, exist_ok=True)
+
     # Load dataloaders
     if Config.use_tfds:
         train_dataloader, val_dataloader = get_train_dataloader(Config.dataset_name, Config)
         train_dataloader = iter(train_dataloader)
-        val_dataloader = iter(val_dataloader)
+        # val_dataloader = iter(val_dataloader)
     else:
         ms = get_ms()
         dataloader = DataLoader(Config, ms)

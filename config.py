@@ -34,11 +34,13 @@ class Config:
     epochs_to_save_weights = 10
 
     # Openset
-    test_with_openset = True
+    openset_rate = 0.4
     threshold = 0.5
 
     # Data
     n_workers = 8
+    batch_size = 16
+    split_weight = (9, 1)
     input_shape = (64, 64, 3)               # Resize
     # TFDS
     use_tfds = True
@@ -55,14 +57,12 @@ class Config:
     imagenet_resize = [256, 256]
     imagenet_crop = [224, 224, 3]
 
-
     # Directories
     results_dir = 'exps/delete'
     classifier_weight_path = None
 
     # Trainer
     num_epochs = 1000
-    batch_size = 16
     lr = 1e-4
     beta1 = 0.5
     beta2 = 0.999
