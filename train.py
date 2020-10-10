@@ -5,16 +5,16 @@ import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 
-from inference import test_opened
 from config import Config, ModelStructure
 from models.modules.gradcam import GuidedGradCAM
 from models.vanilla_classifier import VanillaClassifier
+from models.deformable_classifier import DeformableClassifier
 from dataloader.tfds import get_train_dataloader
 from dataloader.imagenet_dataloader import DataLoader
 from utils import get_ms
 
 
-def train(classifier, dataloader):
+def train(classifier, train_dataloader, val_dataloader):
     cam_dir = f'{Config.results_dir}/cam'
     log_dir = f'{Config.results_dir}/logs'
     chkpt_dir = f'{Config.results_dir}/chkpt'
@@ -23,21 +23,37 @@ def train(classifier, dataloader):
     os.makedirs(chkpt_dir, exist_ok=True)
 
     writer = tf.summary.create_file_writer(log_dir, filename_suffix=f'_{str(Config.structure)}')
-    loss_names = ["ce_loss", "acc"]
+    loss_names = ["train/ce_loss", "train/acc"]
 
+    best_val_acc = 0
     classifier.summary()
     with writer.as_default():
         for epoch in range(Config.num_epochs):
             for step in tqdm(range(Config.num_steps), desc=f"Epoch {epoch}"):
                 # Train
-                img, label = next(dataloader)
+                img, label = next(train_dataloader)
                 losses = classifier.train_on_batch(img, label)
 
                 # Log losses
                 for loss_name, loss in zip(loss_names, losses):
-                    tf.summary.scalar(loss_name, loss, step=epoch*Config.num_steps+step)
+                    tf.summary.scalar(loss_name, loss, step=epoch * Config.num_steps + step)
                 writer.flush()
             print(losses)
+
+            # Validation
+            # if (epoch + 1) % Config.epochs_to_validate == 0:
+            #     val_losses = []
+            #     val_accs = []
+            #     for val_img, val_label in val_dataloader:
+            #         val_loss, val_acc = classifier.test_on_batch(val_img, val_label)
+            #         val_losses.append(val_loss)
+            #         val_accs.append(val_acc)
+            #     tf.summary.scalar('val/ce_loss', np.mean(val_losses), step=epoch)
+            #     tf.summary.scalar('val/acc', np.mean(val_accs), step=epoch)
+            #
+            #     if np.mean(val_accs) > best_val_acc:
+            #         best_val_acc = np.mean(val_accs)
+            #         classifier.save_weights(f"{chkpt_dir}/{str(Config.structure)}-classifier-best.h5")
 
             # Save GradCAM
             if (epoch + 1) % Config.epochs_to_save_gradCAM == 0:
@@ -60,23 +76,28 @@ def train(classifier, dataloader):
 if __name__ == '__main__':
     # Load dataloaders
     if Config.use_tfds:
-        train_dataloader, test_dataloader = get_train_dataloader(Config.dataset_name, Config)
+        train_dataloader, val_dataloader = get_train_dataloader(Config.dataset_name, Config)
         train_dataloader = iter(train_dataloader)
+        val_dataloader = iter(val_dataloader)
     else:
         ms = get_ms()
         dataloader = DataLoader(Config, ms)
-        train_dataloader = iter(dataloader.get_train_dataloader())
+        train_dataloader, val_dataloader = dataloader.get_train_dataloaders()
+        train_dataloader = iter(train_dataloader)
+        val_dataloader = iter(val_dataloader)
         Config.num_steps = dataloader.train_len // dataloader.get_batch_size()
 
     # Define model
     classifier = None
     if Config.structure == ModelStructure.VANILLA:
         classifier = VanillaClassifier(Config).build_model()
+    elif Config.structure == ModelStructure.DEFORM:
+        classifier = DeformableClassifier(Config).build_model()
     else:
         raise Exception("Not implemented model structure")
 
     if Config.classifier_weight_path:
         classifier.load_weights(Config.classifier_weight_path)
 
-    train(classifier, train_dataloader)
+    train(classifier, train_dataloader, val_dataloader)
     # test_opened(classifier, test_dataloader)

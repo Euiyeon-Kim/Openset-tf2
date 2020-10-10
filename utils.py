@@ -45,6 +45,7 @@ def openset_acc(pred, label):
     total_acc = np.sum(pred == label) / len(label)
 
     real_openset = tf.cast(label == -1, "int64")
+
     if np.sum(real_openset) == 0:
         open_acc = 0
     else:
@@ -54,7 +55,7 @@ def openset_acc(pred, label):
     pred[pred == -1] = -2
     close_acc = np.sum(pred == label) / (len(label) - np.sum(real_openset))
 
-    return total_acc, open_acc, close_acc, np.sum(real_openset)
+    return total_acc, open_acc, close_acc, np.sum(real_openset), np.sum(pred_openset)
 
 
 def closeset_acc(pred, label):
