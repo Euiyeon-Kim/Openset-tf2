@@ -11,6 +11,7 @@ from config import Config, ModelStructure
 from models.modules.gradcam import GuidedGradCAM
 from models.vanilla_classifier import VanillaClassifier
 from models.deformable_classifier import DeformableClassifier
+from models.sn_classifier import SpecNormClassifier
 from dataloader.tfds import get_train_dataloader
 from dataloader.imagenet_dataloader import DataLoader
 from utils import get_ms, closeset_acc
@@ -98,6 +99,8 @@ if __name__ == '__main__':
         classifier = VanillaClassifier(Config).build_model()
     elif Config.structure == ModelStructure.DEFORM:
         classifier = DeformableClassifier(Config).build_model()
+    elif Config.structure == ModelStructure.SPNORM:
+        classifier = SpecNormClassifier(Config).build_model()
     else:
         raise Exception("Not implemented model structure")
     classifier.summary()

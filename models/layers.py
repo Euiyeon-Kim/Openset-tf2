@@ -2,6 +2,7 @@ from keras.layers import Conv2D, Dense
 
 from utils import get_activation
 from models.modules.deformable import ConvOffset2D
+from models.modules.spectral_norm import SN
 
 
 # Vanilla classifier
@@ -35,3 +36,12 @@ def deform_conv_block(channels, deform_channels, kernel_size, activation, stride
         return x
     return _deform_conv_block
 
+
+# Spectral normalization classifier
+def sn_conv_blocks(channels, kernel_size, strides, activation, name, name_offset=0):
+    def _conv_blocks(x):
+        for idx, channel in enumerate(channels):
+            x = SN(Conv2D(filters=channel, kernel_size=kernel_size, strides=strides, padding='same', name=f'{name}_conv_{idx+name_offset}'))(x)
+            x = get_activation(activation)(x)
+        return x
+    return _conv_blocks

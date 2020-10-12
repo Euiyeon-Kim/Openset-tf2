@@ -44,6 +44,7 @@ def preprocess_dataset(ds, ds_info, config, train_step=True):
 
     if train_step:
         ds = ds.map(lambda x, y: (x, tf.one_hot(y, depth=config.num_classes)), num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        ds = ds.cache()
         ds = ds.repeat()
         ds = ds.shuffle(ds_info.splits['train'].num_examples)
         ds = ds.batch(config.batch_size)

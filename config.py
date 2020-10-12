@@ -13,7 +13,7 @@ class ModelStructure(Enum):
 
 class Config:
     # Model
-    structure = ModelStructure.DEFORM
+    structure = ModelStructure.SPNORM
     kernel_size = 3
     strides = 2
     activation = 'lrelu'
@@ -25,7 +25,7 @@ class Config:
     deform_conv_offset_channels = [128, 256]
 
     # GradCAM
-    cam_layer = 'shared_conv_4'
+    cam_layer = 'sn_3'
 
     # Basics
     n_gpus = 1
@@ -40,7 +40,7 @@ class Config:
 
     # Data
     n_workers = 8
-    batch_size = 64
+    batch_size = 256
     split_weight = (9, 1)
     input_shape = (224, 224, 3)               # Resize
     # TFDS
@@ -59,7 +59,7 @@ class Config:
     imagenet_crop = [224, 224, 3]
 
     # Directories
-    results_dir = 'exps/deform_imagenet'
+    results_dir = 'exps/spnorm_imagenet'
     classifier_weight_path = None
 
     # Trainer

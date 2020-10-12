@@ -42,6 +42,7 @@ class DataLoader:
         self.train_len = 0
         self.val_len = 0
         self.test_len = 0
+        self.train_infos = []
         self.closed_test_len = 0
         self.opend_test_len = 0
 
