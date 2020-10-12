@@ -9,23 +9,24 @@ class ModelStructure(Enum):
     SENET = 'senet'
     SPNORM = 'spectral_norm'
     DEFORM = 'deformable'
+    CUSTOM = 'custom'
 
 
 class Config:
     # Model
-    structure = ModelStructure.SPNORM
+    structure = ModelStructure.CUSTOM
     kernel_size = 3
     strides = 2
     activation = 'lrelu'
-    # Vanilla
-    shared_conv_channels = [64, 128, 256, 512]
+    # Classifier
+    shared_conv_channels = [32, 64, 128, 256, 512]
     dense_branch_units = [512, 256]
     # Deform
     deform_conv_channels = [32, 64, 128, 256, 512]
     deform_conv_offset_channels = [128, 256]
 
     # GradCAM
-    cam_layer = 'sn_3'
+    cam_layer = 'sn_9'
 
     # Basics
     n_gpus = 1
@@ -40,7 +41,7 @@ class Config:
 
     # Data
     n_workers = 8
-    batch_size = 256
+    batch_size = 128
     split_weight = (9, 1)
     input_shape = (224, 224, 3)               # Resize
     # TFDS

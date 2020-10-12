@@ -4,7 +4,7 @@ from keras.optimizers import Adam
 from keras.losses import categorical_crossentropy
 from keras.utils import multi_gpu_model
 
-from models.layers import conv_blocks, deform_conv_block, dense_branches
+from models.layers import conv2d, conv_blocks, deform_conv_block, dense_branches
 
 
 class DeformableClassifier:
@@ -18,6 +18,8 @@ class DeformableClassifier:
                                   kernel_size=self.config.kernel_size,
                                   strides=self.config.strides,
                                   activation=self.config.activation,
+                                  use_sn=False,
+                                  norm='bn',
                                   name='shared',
                                   name_offset=0)(input_layer)
 
@@ -28,13 +30,16 @@ class DeformableClassifier:
                                         activation=self.config.activation,
                                         name='shared',
                                         name_offset=2)(shared_conv)
-        shared_conv = Conv2D(filters=self.config.deform_conv_channels[-1], kernel_size=3, strides=2, padding='same', name=f'shared_conv_{len(self.config.deform_conv_channels)-1}')(shared_conv)
-        shared_conv = LeakyReLU(0.2)(shared_conv)
+
+        shared_conv = conv2d(shared_conv, filters=self.config.deform_conv_channels[-1], kernel_size=3, strides=2, use_sn=False,
+                             norm='bn', activation='lrelu', name=f'shared_conv_{len(self.config.deform_conv_channels)-1}')
         conv_flatten = Flatten()(shared_conv)
 
         out = dense_branches(units=self.config.dense_branch_units,
                              output_num=self.config.num_classes,
                              activation=self.config.activation,
+                             use_dropout=True,
+                             dropout_rate=0.25,
                              name='class'
                              )(conv_flatten)
 

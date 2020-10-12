@@ -4,23 +4,24 @@ from keras.optimizers import Adam
 from keras.losses import categorical_crossentropy
 from keras.utils import multi_gpu_model
 
-from models.layers import conv_blocks, dense_branches
+from models.layers import conv2d, dense_branches, res_blocks
 
 
-class SpecNormClassifier:
+class CustomClassifier:
     def __init__(self, config):
         self.config = config
 
     def define_model(self):
         input_layer = Input(shape=self.config.input_shape)
 
-        shared_conv = conv_blocks(channels=self.config.shared_conv_channels,
-                                  kernel_size=self.config.kernel_size,
-                                  strides=self.config.strides,
-                                  activation=self.config.activation,
-                                  use_sn=True,
-                                  norm='bn',
-                                  name='shared')(input_layer)
+        # shared_conv = conv2d(input_layer, filters=self.config.shared_conv_channels[0],
+        #                      kernel_size=3, strides=2, use_sn=False, norm='bn', activation='lrelu',
+        #                      name=f'shared_conv_0')
+
+        shared_conv = res_blocks(channels=self.config.shared_conv_channels,
+                                 activation=self.config.activation,
+                                 use_sn=True,
+                                 norm='in')(input_layer)
 
         conv_flatten = Flatten()(shared_conv)
 

@@ -12,6 +12,7 @@ from models.modules.gradcam import GuidedGradCAM
 from models.vanilla_classifier import VanillaClassifier
 from models.deformable_classifier import DeformableClassifier
 from models.sn_classifier import SpecNormClassifier
+from models.custom_classifier import CustomClassifier
 from dataloader.tfds import get_train_dataloader
 from dataloader.imagenet_dataloader import DataLoader
 from utils.utils import get_ms, closeset_acc
@@ -72,7 +73,7 @@ def train(classifier, train_dataloader, val_dataloader):
                 cv2.imwrite(f'{cam_dir}/{epoch}_{predicted_class}_{real_class}_cam.png', cam_img)
 
                 del cam_model
-
+            exit()
             # Save weights
             if (epoch+1) % Config.epochs_to_save_weights == 0 or (epoch+1) == Config.num_epochs:
                 classifier.save_weights(f"{chkpt_dir}/{str(Config.structure)}-classifier-{epoch+1}.h5")
@@ -101,6 +102,8 @@ if __name__ == '__main__':
         classifier = DeformableClassifier(Config).build_model()
     elif Config.structure == ModelStructure.SPNORM:
         classifier = SpecNormClassifier(Config).build_model()
+    elif Config.structure == ModelStructure.CUSTOM:
+        classifier = CustomClassifier(Config).build_model()
     else:
         raise Exception("Not implemented model structure")
     classifier.summary()
