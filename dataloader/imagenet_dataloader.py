@@ -15,11 +15,11 @@ def load_train_img_with_normalize(img_path, resize, crop):
     return img
 
 
-def load_test_img_with_normalize(img_path, crop):
+def load_test_img_with_normalize(img_path, ratio):
     img = tf.io.read_file(img_path)
     img = tf.image.decode_jpeg(img, channels=3)         # output an RGB image
     img = tf.cast(img, tf.float32)
-    img = tf.image.central_crop(img, crop)
+    img = tf.image.central_crop(img, ratio)
     img = (img / 127.5) - 1
     return img
 
@@ -30,8 +30,8 @@ def load_train_img_fn(img_path, label, resize, crop, num_classes):
     return img, label
 
 
-def load_test_img_fn(img_path, label, crop):
-    img = load_test_img_with_normalize(img_path, crop)
+def load_test_img_fn(img_path, label, resize, crop):
+    img = load_train_img_with_normalize(img_path, resize, crop)
     return img, label
 
 
@@ -87,10 +87,10 @@ class DataLoader:
         return ds
 
     def get_train_dataloaders(self):
-        load_fn = partial(load_train_img_fn,
-                          resize=self._config.imagenet_resize,
-                          crop=self._config.imagenet_crop,
-                          num_classes=self._config.num_classes)
+        load_train_fn = partial(load_train_img_fn,
+                                resize=self._config.imagenet_resize,
+                                crop=self._config.imagenet_crop,
+                                num_classes=self._config.num_classes)
 
         train_infos = []
         with open(self._config.train_txt_path) as f:
@@ -98,15 +98,18 @@ class DataLoader:
                 train_infos.append(line)
             self.train_len = len(train_infos)
         train_data_generator = partial(self._train_data_generator, infos=train_infos)
-        train_ds = self._dataset_from_generator(train_data_generator, load_fn)
+        train_ds = self._dataset_from_generator(train_data_generator, load_train_fn)
 
+        load_val_fn = partial(load_test_img_fn,
+                              resize=self._config.imagenet_resize,
+                              crop=self._config.imagenet_crop)
         val_infos = []
         with open(self._config.val_txt_path) as f:
             for line in f:
                 val_infos.append(line)
             self.val_len = len(val_infos)
         val_data_generator = partial(self._val_data_generator, infos=val_infos)
-        val_ds = self._dataset_from_generator(val_data_generator, load_fn, repeat=False, drop_remainder=False)
+        val_ds = self._dataset_from_generator(val_data_generator, load_val_fn, repeat=False, drop_remainder=False)
         return train_ds, val_ds
 
     def get_test_dataloaders(self, include_openset=True):

@@ -1,5 +1,6 @@
 import os
 import shutil
+from termcolor import colored
 
 import cv2
 import numpy as np
@@ -12,7 +13,7 @@ from models.vanilla_classifier import VanillaClassifier
 from models.deformable_classifier import DeformableClassifier
 from dataloader.tfds import get_train_dataloader
 from dataloader.imagenet_dataloader import DataLoader
-from utils import get_ms, openset_acc
+from utils import get_ms, closeset_acc
 
 
 def train(classifier, train_dataloader, val_dataloader):
@@ -27,7 +28,7 @@ def train(classifier, train_dataloader, val_dataloader):
     loss_names = ["train/ce_loss", "train/acc"]
 
     best_val_acc = 0
-    classifier.summary()
+    print(colored(f'Start training [{Config.results_dir}]', 'green'))
     with writer.as_default():
         for epoch in range(Config.num_epochs):
             for step in tqdm(range(Config.num_steps), desc=f"Epoch {epoch}"):
@@ -43,34 +44,19 @@ def train(classifier, train_dataloader, val_dataloader):
 
             # Validation
             if (epoch + 1) % Config.epochs_to_validate == 0:
-                total_accs = []
-                open_accs = []
-                close_accs = []
-                confusion_mats = np.zeros((2, 2))
+                val_accs = []
                 for val_img, val_label in val_dataloader:
                     val_probs = classifier.predict(val_img)
                     val_preds = np.argmax(val_probs, axis=-1)
                     val_probs = np.max(val_probs, axis=-1)
                     val_preds[val_probs < Config.threshold] = -1
+                    val_acc = closeset_acc(val_preds, val_label)
+                    val_accs.append(val_acc)
 
-                    total_acc, open_acc, close_acc, _, _, confusion_mat = openset_acc(val_preds, val_label)
+                tf.summary.scalar('val_acc', np.mean(val_accs), step=epoch)
 
-                    total_accs.append(total_acc)
-                    open_accs.append(open_acc)
-                    close_accs.append(close_acc)
-                    confusion_mats += confusion_mat
-
-                val_presision = confusion_mats[0][0] / (confusion_mats[0][0] + confusion_mats[0][1])
-                val_recall = confusion_mats[0][0] / (confusion_mats[0][0] + confusion_mats[1][1])
-                val_f1 = 2 * ((val_presision * val_recall) / (val_presision + val_recall + 1e-12))
-
-                tf.summary.scalar('val/total_acc', np.mean(total_accs), step=epoch)
-                tf.summary.scalar('val/open_acc', np.mean(open_accs), step=epoch)
-                tf.summary.scalar('val/close_acc', np.mean(close_accs), step=epoch)
-                tf.summary.scalar('val/f1_score', val_f1, step=epoch)
-
-                if np.mean(total_accs) > best_val_acc:
-                    best_val_acc = np.mean(total_accs)
+                if np.mean(val_accs) > best_val_acc:
+                    best_val_acc = np.mean(val_accs)
                     classifier.save_weights(f"{chkpt_dir}/{str(Config.structure)}-classifier-best.h5")
 
             # Save GradCAM
@@ -104,7 +90,6 @@ if __name__ == '__main__':
         dataloader = DataLoader(Config, ms)
         train_dataloader, val_dataloader = dataloader.get_train_dataloaders()
         train_dataloader = iter(train_dataloader)
-        val_dataloader = iter(val_dataloader)
         Config.num_steps = dataloader.train_len // dataloader.get_batch_size()
 
     # Define model
@@ -115,9 +100,11 @@ if __name__ == '__main__':
         classifier = DeformableClassifier(Config).build_model()
     else:
         raise Exception("Not implemented model structure")
+    classifier.summary()
 
     if Config.classifier_weight_path:
         classifier.load_weights(Config.classifier_weight_path)
+        print(colored(f'Loaded classifier weight from [{Config.classifier_weight_path}]', 'green'))
 
     train(classifier, train_dataloader, val_dataloader)
     # test_opened(classifier, test_dataloader)

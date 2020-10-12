@@ -34,6 +34,7 @@ class Config:
     epochs_to_save_weights = 10
 
     # Openset
+    test_with_openset = True
     openset_rate = 0.4
     threshold = 0.5
 
@@ -59,7 +60,7 @@ class Config:
 
     # Directories
     results_dir = 'exps/deform_imagenet'
-    classifier_weight_path = None #'exps/delete/chkpt/deformable-classifier-best.h5'
+    classifier_weight_path = None
 
     # Trainer
     num_epochs = 1000

@@ -42,14 +42,15 @@ def resize_img(img, label, size):
 
 
 def openset_acc(pred, label):
-    # TP FP
-    # TN FN
+    # TP(cor closed)  FP (incor closed)
+    # TN(cor open)    FN (incor open)
     confusion_mat = np.zeros((2, 2))
     total_acc = np.sum(pred == label) / len(label)
 
     real_openset = tf.cast(label == -1, "int64")
 
     if np.sum(real_openset) == 0:
+        pred_as_openset = np.array([0])
         open_acc = 0
     else:
         pred_as_openset = tf.cast(pred == -1, "int64")
@@ -63,6 +64,11 @@ def openset_acc(pred, label):
     close_acc = true_pos / (len(label) - np.sum(real_openset))
     confusion_mat[0][0] = true_pos
     confusion_mat[0][1] = len(label) - np.sum(real_openset) - true_pos
+
+    # if confusion_mats[0][0] + confusion_mats[1][1] != 0:
+    #     val_presision = confusion_mats[0][0] / (confusion_mats[0][0] + confusion_mats[0][1])
+    #     val_recall = confusion_mats[0][0] / (confusion_mats[0][0] + confusion_mats[1][1])
+    #     val_f1 = 2 * ((val_presision * val_recall) / (val_presision + val_recall + 1e-12))
 
     return total_acc, open_acc, close_acc, np.sum(real_openset), np.sum(pred_as_openset), confusion_mat
 
