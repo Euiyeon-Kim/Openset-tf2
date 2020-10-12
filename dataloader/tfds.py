@@ -3,7 +3,7 @@ from functools import partial
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
-from utils import normalize_img, resize_img
+from utils.utils import normalize_img, resize_img
 
 
 def filter_openset_train(_, label, openset_labels):

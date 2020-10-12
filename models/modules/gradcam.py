@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
 
-from utils import denormalize_img
+from utils.utils import denormalize_img
 
 
 class GuidedGradCAM:

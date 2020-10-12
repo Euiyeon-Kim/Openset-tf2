@@ -5,7 +5,7 @@ from config import Config, ModelStructure
 from models.vanilla_classifier import VanillaClassifier
 from models.deformable_classifier import DeformableClassifier
 from dataloader.imagenet_dataloader import DataLoader
-from utils import openset_acc, closeset_acc, get_ms
+from utils.utils import openset_acc, closeset_acc, get_ms
 
 
 def test_opened(classifier, dataloader):

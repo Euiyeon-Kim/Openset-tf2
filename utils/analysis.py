@@ -18,18 +18,18 @@ if __name__ == '__main__':
     unique = unique[sorted_idx]
     counts = counts[sorted_idx]
 
-    imagenet_name_json_path = 'data/imagenet.json'
+    imagenet_name_json_path = '../data/imagenet.json'
     with open(imagenet_name_json_path) as json_file:
         json_data = json.load(json_file)
 
     wnid_infos = {}
-    with open('data/words.txt') as f:
+    with open('../data/words.txt') as f:
         for line in f:
             wnid = line[:9]
             word = line[10:-1]
             wnid_infos[word] = wnid
 
-    imagenet_analysis_path = 'data/imagenet_train_info.txt'
+    imagenet_analysis_path = '../data/imagenet_train_info.txt'
     with open(imagenet_analysis_path, 'w') as f:
         for label, cnt in zip(unique, counts):
             str_labels = json_data[str(label)]

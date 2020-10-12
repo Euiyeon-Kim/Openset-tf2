@@ -14,7 +14,7 @@ from models.deformable_classifier import DeformableClassifier
 from models.sn_classifier import SpecNormClassifier
 from dataloader.tfds import get_train_dataloader
 from dataloader.imagenet_dataloader import DataLoader
-from utils import get_ms, closeset_acc
+from utils.utils import get_ms, closeset_acc
 
 
 def train(classifier, train_dataloader, val_dataloader):

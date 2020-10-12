@@ -1,6 +1,6 @@
 from keras.layers import Conv2D, Dense
 
-from utils import get_activation
+from utils.utils import get_activation
 from models.modules.deformable import ConvOffset2D
 from models.modules.spectral_norm import SN
 
