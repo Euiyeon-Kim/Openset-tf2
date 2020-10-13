@@ -60,7 +60,7 @@ class Config:
     imagenet_crop = [224, 224, 3]
 
     # Directories
-    results_dir = 'exps/spnorm_imagenet'
+    results_dir = 'exps/custom_imagenet'
     classifier_weight_path = None
 
     # Trainer

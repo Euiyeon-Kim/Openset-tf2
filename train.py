@@ -42,6 +42,7 @@ def train(classifier, train_dataloader, val_dataloader):
                 for loss_name, loss in zip(loss_names, losses):
                     tf.summary.scalar(loss_name, loss, step=epoch * Config.num_steps + step)
                 writer.flush()
+
             print(losses)
 
             # Validation
@@ -73,7 +74,7 @@ def train(classifier, train_dataloader, val_dataloader):
                 cv2.imwrite(f'{cam_dir}/{epoch}_{predicted_class}_{real_class}_cam.png', cam_img)
 
                 del cam_model
-            exit()
+
             # Save weights
             if (epoch+1) % Config.epochs_to_save_weights == 0 or (epoch+1) == Config.num_epochs:
                 classifier.save_weights(f"{chkpt_dir}/{str(Config.structure)}-classifier-{epoch+1}.h5")
