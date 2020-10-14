@@ -54,7 +54,7 @@ def train(classifier, train_dataloader, val_dataloader):
                     val_probs = np.max(val_probs, axis=-1)
                     val_preds[val_probs < Config.threshold] = -1
                     val_acc = closeset_acc(val_preds, val_label)
-                    val_accs.append(val_acc)
+                    val_accs.append(val_acc*100.)
 
                 tf.summary.scalar('val_acc', np.mean(val_accs), step=epoch)
 

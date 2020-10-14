@@ -36,12 +36,12 @@ class Config:
 
     # Openset
     test_with_openset = True
-    openset_rate = 0.4
-    threshold = 0.5
+    openset_rate = 0
+    threshold = 0
 
     # Data
     n_workers = 8
-    batch_size = 128
+    batch_size = 96
     split_weight = (9, 1)
     input_shape = (224, 224, 3)               # Resize
     # TFDS
@@ -49,18 +49,18 @@ class Config:
     tfds_dir = 'data'
     dataset_name = 'cifar100'                  # TFDS dataset name
     # ImageNet
-    root_dir = 'data/imagenet'
+    root_dir = 'data/hr-ting'
     openset_dir = 'data/imagenet_LT/ImageNet_LT_open'
-    train_txt_path = 'data/imagenet_LT/imagenet_oltr_train.txt'
-    val_txt_path = 'data/imagenet_LT/imagenet_oltr_val.txt'
-    test_txt_path = 'data/imagenet_LT/imagenet_oltr_test.txt'
+    train_txt_path = 'data/hr-ting/hr_ting_train.txt'
+    val_txt_path = 'data/hr-ting/hr_ting_val.txt'
+    test_txt_path = 'data/hr-ting/hr_ting_test.txt'
     openset_txt_path = 'data/imagenet_LT/imagenet_oltr_open.txt'
     num_classes = 1000
     imagenet_resize = [256, 256]
     imagenet_crop = [224, 224, 3]
 
     # Directories
-    results_dir = 'exps/custom_imagenet'
+    results_dir = 'exps/hr_ting'
     classifier_weight_path = None
 
     # Trainer
