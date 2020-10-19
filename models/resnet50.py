@@ -5,6 +5,9 @@ from keras.optimizers import Adam
 from keras.losses import categorical_crossentropy
 from keras.utils import multi_gpu_model
 
+from models.layers import conv2d
+from utils.utils import get_activation
+
 
 class Resnet50:
     def __init__(self, config):
@@ -13,169 +16,56 @@ class Resnet50:
     def define_model(self):
         input_layer = Input(shape=self.config.input_shape)
 
-        x = ZeroPadding2D(padding=(3, 3))(input_layer)
-        x = Conv2D(64, (7, 7), strides=(2, 2))(x)
-        x = BatchNormalization()(x)
-        x = Activation('relu')(x)
+        x = conv2d(input_layer, filters=64, kernel_size=7, strides=2,
+                   pad_type='zero', pad_size=3, norm='in', activation='lrelu')
         x = ZeroPadding2D(padding=(1, 1))(x)
-
         x = MaxPooling2D((3, 3), 2)(x)
 
-        shortcut = x
+        shortcut = conv2d(x, filters=256, kernel_size=1, strides=1, pad_type='valid', norm='in')
         for i in range(3):
-            if i == 0:
-                x = Conv2D(64, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
+            x = conv2d(x, filters=64, kernel_size=1, strides=1, pad_type='valid', norm='in', activation='lrelu')
+            x = conv2d(x, filters=64, kernel_size=3, strides=1, pad_type='same', norm='in', activation='lrelu')
+            x = conv2d(x, filters=256, kernel_size=1, strides=1, pad_type='valid', norm='in')
 
-                x = Conv2D(64, (3, 3), strides=(1, 1), padding='same')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
+            x = Add()([x, shortcut])
+            x = get_activation('lrelu')(x)
+            shortcut = x
 
-                x = Conv2D(256, (1, 1), strides=(1, 1), padding='valid')(x)
-                shortcut = Conv2D(256, (1, 1), strides=(1, 1), padding='valid')(shortcut)
-                x = InstanceNormalization()(x)
-                shortcut = InstanceNormalization()(shortcut)
-
-                x = Add()([x, shortcut])
-                x = Activation('relu')(x)
-
-                shortcut = x
-
-            else:
-                x = Conv2D(64, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
-
-                x = Conv2D(64, (3, 3), strides=(1, 1), padding='same')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
-
-                x = Conv2D(256, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = InstanceNormalization()(x)
-
-                x = Add()([x, shortcut])
-                x = Activation('relu')(x)
-
-                shortcut = x
-
-        shortcut = x
+        shortcut = conv2d(x, filters=512, kernel_size=1, strides=2, pad_type='valid', norm='in')
         for i in range(4):
-            if i == 0:
-                x = Conv2D(128, (1, 1), strides=(2, 2), padding='valid')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
+            x = conv2d(x, filters=128, kernel_size=1, strides=2, pad_type='valid', norm='in', activation='lrelu') if i == 0 \
+                else conv2d(x, filters=128, kernel_size=1, strides=1, pad_type='valid', norm='in', activation='lrelu')
+            x = conv2d(x, filters=128, kernel_size=3, strides=1, pad_type='same', norm='in', activation='lrelu')
+            x = conv2d(x, filters=512, kernel_size=1, strides=1, pad_type='valid', norm='in')
 
-                x = Conv2D(128, (3, 3), strides=(1, 1), padding='same')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
+            x = Add()([x, shortcut])
+            x = get_activation('lrelu')(x)
+            shortcut = x
 
-                x = Conv2D(512, (1, 1), strides=(1, 1), padding='valid')(x)
-                shortcut = Conv2D(512, (1, 1), strides=(2, 2), padding='valid')(shortcut)
-                x = InstanceNormalization()(x)
-                shortcut = InstanceNormalization()(shortcut)
-
-                x = Add()([x, shortcut])
-                x = Activation('relu')(x)
-
-                shortcut = x
-
-            else:
-                x = Conv2D(128, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
-
-                x = Conv2D(128, (3, 3), strides=(1, 1), padding='same')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
-
-                x = Conv2D(512, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = InstanceNormalization()(x)
-
-                x = Add()([x, shortcut])
-                x = Activation('relu')(x)
-
-                shortcut = x
-
-        shortcut = x
+        shortcut = conv2d(x, filters=1024, kernel_size=1, strides=2, pad_type='valid', norm='in')
         for i in range(6):
-            if i == 0:
-                x = Conv2D(256, (1, 1), strides=(2, 2), padding='valid')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
+            x = conv2d(x, filters=256, kernel_size=1, strides=2, pad_type='valid', norm='in', activation='lrelu') if i == 0 \
+                else conv2d(x, filters=256, kernel_size=1, strides=1, pad_type='valid', norm='in', activation='lrelu')
+            x = conv2d(x, filters=256, kernel_size=3, strides=1, pad_type='same', norm='in', activation='lrelu')
+            x = conv2d(x, filters=1024, kernel_size=1, strides=1, pad_type='valid', norm='in')
 
-                x = Conv2D(256, (3, 3), strides=(1, 1), padding='same')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
+            x = Add()([x, shortcut])
+            x = get_activation('lrelu')(x)
+            shortcut = x
 
-                x = Conv2D(1024, (1, 1), strides=(1, 1), padding='valid')(x)
-                shortcut = Conv2D(1024, (1, 1), strides=(2, 2), padding='valid')(shortcut)
-                x = InstanceNormalization()(x)
-                shortcut = InstanceNormalization()(shortcut)
-
-                x = Add()([x, shortcut])
-                x = Activation('relu')(x)
-
-                shortcut = x
-
-            else:
-                x = Conv2D(256, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
-
-                x = Conv2D(256, (3, 3), strides=(1, 1), padding='same')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
-
-                x = Conv2D(1024, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = InstanceNormalization()(x)
-
-                x = Add()([x, shortcut])
-                x = Activation('relu')(x)
-
-                shortcut = x
-
-        shortcut = x
+        shortcut = conv2d(x, filters=2048, kernel_size=1, strides=2, pad_type='valid', norm='in')
         for i in range(3):
-            if i == 0:
-                x = Conv2D(512, (1, 1), strides=(2, 2), padding='valid')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
+            x = conv2d(x, filters=512, kernel_size=1, strides=2, pad_type='valid', norm='in', activation='lrelu') if i == 0 \
+                else conv2d(x, filters=512, kernel_size=1, strides=1, pad_type='valid', norm='in', activation='lrelu')
+            x = conv2d(x, filters=512, kernel_size=3, strides=1, pad_type='same', norm='in', activation='lrelu')
+            x = conv2d(x, filters=2048, kernel_size=1, strides=1, pad_type='valid', norm='in')
 
-                x = Conv2D(512, (3, 3), strides=(1, 1), padding='same')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
-
-                x = Conv2D(2048, (1, 1), strides=(1, 1), padding='valid')(x)
-                shortcut = Conv2D(2048, (1, 1), strides=(2, 2), padding='valid')(shortcut)
-                x = InstanceNormalization()(x)
-                shortcut = InstanceNormalization()(shortcut)
-
-                x = Add()([x, shortcut])
-                x = Activation('relu')(x)
-
-                shortcut = x
-
-            else:
-                x = Conv2D(512, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
-
-                x = Conv2D(512, (3, 3), strides=(1, 1), padding='same')(x)
-                x = InstanceNormalization()(x)
-                x = Activation('relu')(x)
-
-                x = Conv2D(2048, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = InstanceNormalization()(x)
-
-                x = Add()([x, shortcut])
-                x = Activation('relu')(x)
-
-                shortcut = x
+            x = Add()([x, shortcut])
+            x = get_activation('lrelu')(x)
+            shortcut = x
 
         x = GlobalAveragePooling2D()(x)
         out = Dense(self.config.num_classes, activation='softmax', name=f'class_output')(x)
-
         return Model(inputs=input_layer, outputs=out, name='resnet50')
 
     def build_model(self):

@@ -1,8 +1,8 @@
-from keras.models import Model
-from keras.layers import Input, Flatten
-from keras.optimizers import Adam
-from keras.losses import categorical_crossentropy
-from keras.utils import multi_gpu_model
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Flatten
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import categorical_crossentropy
+from tensorflow.keras.utils import multi_gpu_model
 
 from models.layers import dense_branches, res_blocks
 

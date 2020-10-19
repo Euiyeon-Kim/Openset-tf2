@@ -49,11 +49,6 @@ def test_closed(classifier, dataloader):
 
 
 if __name__ == '__main__':
-    from tensorflow import keras
-    a = keras.applications.resnet.ResNet50(include_top=True, weights=None, input_tensor=None, input_shape=None, pooling=None, classes=1000)
-    a.summary()
-    exit()
-
     # Label should be idx not one-hot vector
     ms = get_ms()
     dataloader = DataLoader(Config, ms)

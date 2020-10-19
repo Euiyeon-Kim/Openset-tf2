@@ -1,17 +1,22 @@
-from keras.layers import Conv2D, Dense, Add, Dropout
+from tensorflow.keras.layers import Conv2D, Dense, Add, Dropout, ZeroPadding2D
 
 from models.modules.deformable import ConvOffset2D
 from models.modules.spectral_norm import SN
 from utils.utils import get_activation, get_normalization
 
 
-def conv2d(x, filters, kernel_size=3, strides=1, use_sn=True, norm=None, activation=None, name=None):
-    # Apply Spectral normalization
-    x = SN(Conv2D(filters, kernel_size=kernel_size, strides=strides, padding='same', name=name))(x) if use_sn else \
-        Conv2D(filters, kernel_size=kernel_size, strides=strides, padding='same', name=name)(x)
+def conv2d(x, filters, kernel_size=3, strides=1, use_sn=False, pad_type=None, pad_size=None, norm=None, activation=None):
+    if pad_type == 'zero':
+        x = ZeroPadding2D(padding=pad_size)(x)
+    if pad_type in [None, 'zero']:
+        x = SN(Conv2D(filters, kernel_size=kernel_size, strides=strides))(x) if use_sn else \
+            Conv2D(filters, kernel_size=kernel_size, strides=strides)(x)
+    else:
+        x = SN(Conv2D(filters, kernel_size=kernel_size, strides=strides, padding=pad_type))(x) if use_sn else \
+            Conv2D(filters, kernel_size=kernel_size, strides=strides, padding=pad_type)(x)
 
     # Normalization
-    x = get_normalization(norm, name=f'{name}_norm')(x)
+    x = get_normalization(norm)(x)
 
     # Activation
     x = get_activation(activation)(x)

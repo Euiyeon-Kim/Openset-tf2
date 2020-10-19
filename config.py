@@ -13,6 +13,8 @@ class ModelStructure(Enum):
 
 
 class Config:
+    exp_name = 'imagenet_resnet50_in'
+
     # Model
     structure = ModelStructure.RESNET50
     kernel_size = 3
@@ -60,7 +62,7 @@ class Config:
     imagenet_crop = [224, 224, 3]
 
     # Directories
-    results_dir = 'exps/imagenet_resnet50_in'
+    results_dir = f'exps/{exp_name}'
     classifier_weight_path = None
 
     # Trainer

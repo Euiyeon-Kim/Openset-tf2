@@ -40,13 +40,13 @@ def get_activation(activation):
     raise NotImplementedError(f"Unimplemented activation layer [{activation}]")
 
 
-def get_normalization(norm, name):
+def get_normalization(norm):
     if norm is None:
         return lambda x: x
     elif norm == 'bn':
-        return BatchNormalization(name=name)
+        return BatchNormalization()
     elif norm == 'in':
-        return InstanceNormalization(name=name)
+        return InstanceNormalization()
     elif norm == 'bin':
         raise NotImplementedError("Have to implement batch instance normalization")
     raise NotImplementedError(f"Unimplemented normalization layer [{norm}]")
