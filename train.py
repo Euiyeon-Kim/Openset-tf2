@@ -72,7 +72,10 @@ def train(classifier, train_dataloader, val_dataloader):
 
             # Save weights
             if (epoch+1) % Config.epochs_to_save_weights == 0 or (epoch+1) == Config.num_epochs:
-                classifier.save_weights(f"{chkpt_dir}/{str(Config.structure)}-classifier-{epoch+1}.h5")
+                classifier.save_weights(f"{chkpt_dir}/{str(Config.structure)}-{epoch+1}.h5")
+            if os.path.isfile(f"{chkpt_dir}/{str(Config.structure)}-newest.h5"):
+                os.remove(f"{chkpt_dir}/{str(Config.structure)}-newest.h5")
+            classifier.save_weights(f"{chkpt_dir}/{str(Config.structure)}-newest.h5")
 
 
 if __name__ == '__main__':

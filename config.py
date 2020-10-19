@@ -32,7 +32,7 @@ class Config:
     n_gpus = 1
     epochs_to_validate = 1
     epochs_to_save_gradCAM = 1
-    epochs_to_save_weights = 10
+    epochs_to_save_weights = 2
 
     # Openset
     test_with_openset = True
@@ -60,7 +60,7 @@ class Config:
     imagenet_crop = [224, 224, 3]
 
     # Directories
-    results_dir = 'exps/imagenet_resnet50'
+    results_dir = 'exps/imagenet_resnet50_in'
     classifier_weight_path = None
 
     # Trainer

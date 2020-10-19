@@ -1,5 +1,6 @@
 from keras.models import Model
 from keras.layers import Input, GlobalAveragePooling2D, ZeroPadding2D, Conv2D, BatchNormalization, Activation, MaxPooling2D, Add, Dense
+from tensorflow_addons.layers import InstanceNormalization
 from keras.optimizers import Adam
 from keras.losses import categorical_crossentropy
 from keras.utils import multi_gpu_model
@@ -24,17 +25,17 @@ class Resnet50:
         for i in range(3):
             if i == 0:
                 x = Conv2D(64, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(64, (3, 3), strides=(1, 1), padding='same')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(256, (1, 1), strides=(1, 1), padding='valid')(x)
                 shortcut = Conv2D(256, (1, 1), strides=(1, 1), padding='valid')(shortcut)
-                x = BatchNormalization()(x)
-                shortcut = BatchNormalization()(shortcut)
+                x = InstanceNormalization()(x)
+                shortcut = InstanceNormalization()(shortcut)
 
                 x = Add()([x, shortcut])
                 x = Activation('relu')(x)
@@ -43,15 +44,15 @@ class Resnet50:
 
             else:
                 x = Conv2D(64, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(64, (3, 3), strides=(1, 1), padding='same')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(256, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
 
                 x = Add()([x, shortcut])
                 x = Activation('relu')(x)
@@ -62,17 +63,17 @@ class Resnet50:
         for i in range(4):
             if i == 0:
                 x = Conv2D(128, (1, 1), strides=(2, 2), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(128, (3, 3), strides=(1, 1), padding='same')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(512, (1, 1), strides=(1, 1), padding='valid')(x)
                 shortcut = Conv2D(512, (1, 1), strides=(2, 2), padding='valid')(shortcut)
-                x = BatchNormalization()(x)
-                shortcut = BatchNormalization()(shortcut)
+                x = InstanceNormalization()(x)
+                shortcut = InstanceNormalization()(shortcut)
 
                 x = Add()([x, shortcut])
                 x = Activation('relu')(x)
@@ -81,15 +82,15 @@ class Resnet50:
 
             else:
                 x = Conv2D(128, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(128, (3, 3), strides=(1, 1), padding='same')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(512, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
 
                 x = Add()([x, shortcut])
                 x = Activation('relu')(x)
@@ -100,17 +101,17 @@ class Resnet50:
         for i in range(6):
             if i == 0:
                 x = Conv2D(256, (1, 1), strides=(2, 2), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(256, (3, 3), strides=(1, 1), padding='same')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(1024, (1, 1), strides=(1, 1), padding='valid')(x)
                 shortcut = Conv2D(1024, (1, 1), strides=(2, 2), padding='valid')(shortcut)
-                x = BatchNormalization()(x)
-                shortcut = BatchNormalization()(shortcut)
+                x = InstanceNormalization()(x)
+                shortcut = InstanceNormalization()(shortcut)
 
                 x = Add()([x, shortcut])
                 x = Activation('relu')(x)
@@ -119,15 +120,15 @@ class Resnet50:
 
             else:
                 x = Conv2D(256, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(256, (3, 3), strides=(1, 1), padding='same')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(1024, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
 
                 x = Add()([x, shortcut])
                 x = Activation('relu')(x)
@@ -138,17 +139,17 @@ class Resnet50:
         for i in range(3):
             if i == 0:
                 x = Conv2D(512, (1, 1), strides=(2, 2), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(512, (3, 3), strides=(1, 1), padding='same')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(2048, (1, 1), strides=(1, 1), padding='valid')(x)
                 shortcut = Conv2D(2048, (1, 1), strides=(2, 2), padding='valid')(shortcut)
-                x = BatchNormalization()(x)
-                shortcut = BatchNormalization()(shortcut)
+                x = InstanceNormalization()(x)
+                shortcut = InstanceNormalization()(shortcut)
 
                 x = Add()([x, shortcut])
                 x = Activation('relu')(x)
@@ -157,15 +158,15 @@ class Resnet50:
 
             else:
                 x = Conv2D(512, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(512, (3, 3), strides=(1, 1), padding='same')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
                 x = Activation('relu')(x)
 
                 x = Conv2D(2048, (1, 1), strides=(1, 1), padding='valid')(x)
-                x = BatchNormalization()(x)
+                x = InstanceNormalization()(x)
 
                 x = Add()([x, shortcut])
                 x = Activation('relu')(x)
