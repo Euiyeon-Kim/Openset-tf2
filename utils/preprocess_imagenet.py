@@ -24,37 +24,46 @@ if __name__ == '__main__':
         synset_to_idx[synset] = ilsvrc2012_id
 
     # Save train dataset infos
-    train_wnids = sorted(os.listdir('data/imagenet/train'))
-    with open('data/imagenet/imagenet2012_train_label_infos.txt', 'w') as f:
-        for i in range(1000):
-            wnid = original_idx_to_synset[i+1]
-            name = synset_to_name[wnid]
-            info = f'{i:03} {wnid} {name}\n'
-            f.write(info)
+    # train_wnids = sorted(os.listdir('data/imagenet/train'))
+    # with open('data/imagenet/imagenet2012_label_infos.txt', 'w') as f:
+    #     for i in range(1000):
+    #         wnid = original_idx_to_synset[i+1]
+    #         name = synset_to_name[wnid]
+    #         info = f'{i:03} {wnid} {name}\n'
+    #         f.write(info)
 
-    train_paths = sorted(glob('data/imagenet/train/*/*.JPEG'))
-    with open('data/imagenet/imagenet2012_train_image_infos.txt', 'w') as f:
-        for path in train_paths:
+    # train_paths = sorted(glob('data/imagenet/train/*/*.JPEG'))
+    # with open('data/imagenet/imagenet2012_train_image_infos.txt', 'w') as f:
+    #     for path in train_paths:
+    #         p = path[14:]
+    #         wnid = path[20:29]
+    #         label = synset_to_idx[wnid] - 1
+    #         info = f'{p} {label}\n'
+    #         f.write(info)
+
+    # Preprocess validation dataset
+    # val_paths = sorted(glob('data/imagenet/val/*.JPEG'))
+    # labels = []
+    # with open('data/ILSVRC2012_validation_ground_truth.txt') as f:
+    #     for line in f:
+    #         labels.append(int(line.split(' ')[-1]))
+    # labels = labels
+    #
+    # for path, label in zip(val_paths, labels):
+    #     wnid = original_idx_to_synset[label]
+    #     name = synset_to_name[wnid]
+    #     confirm = os.path.isdir(f'data/imagenet/train/{wnid}')
+    #     os.makedirs(f'data/imagenet/val/{wnid}', exist_ok=True)
+    #     shutil.move(path, f'data/imagenet/val/{wnid}')
+
+    val_paths = sorted(glob('data/imagenet/val/*/*.JPEG'))
+    with open('data/imagenet/imagenet2012_val_image_infos.txt', 'w') as f:
+        for path in val_paths:
             p = path[14:]
-            wnid = path[20:29]
+            wnid = path[18:27]
             label = synset_to_idx[wnid] - 1
             info = f'{p} {label}\n'
             f.write(info)
-
-    # Preprocess validation dataset
-    val_paths = sorted(glob('data/imagenet/val/*.JPEG'))
-    labels = []
-    with open('data/ILSVRC2012_validation_ground_truth.txt') as f:
-        for line in f:
-            labels.append(int(line.split(' ')[-1]))
-    labels = labels[4:]
-
-    for path, label in zip(val_paths, labels):
-        wnid = original_idx_to_synset[label]
-        name = synset_to_name[wnid]
-        confirm = os.path.isdir(f'data/imagenet/train/{wnid}')
-        os.makedirs(f'data/imagenet/val/{wnid}', exist_ok=True)
-        shutil.move(path, f'data/imagenet/val/{wnid}')
 
     # labels = []
     # with open(Config.train_txt_path) as f:

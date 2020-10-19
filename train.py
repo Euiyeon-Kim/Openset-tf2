@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from config import Config, ModelStructure
 from models.modules.gradcam import GuidedGradCAM
-from models.vanilla_classifier import VanillaClassifier
+from models.resnet50 import Resnet50
 from models.deformable_classifier import DeformableClassifier
 from models.sn_classifier import SpecNormClassifier
 from models.custom_classifier import CustomClassifier
@@ -25,9 +25,8 @@ def train(classifier, train_dataloader, val_dataloader):
     os.makedirs(cam_dir, exist_ok=True)
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(chkpt_dir, exist_ok=True)
-
     writer = tf.summary.create_file_writer(log_dir, filename_suffix=f'_{str(Config.structure)}')
-    loss_names = ["train/ce_loss", "train/acc"]
+    loss_names = ['train/loss', 'train/acc']
 
     best_val_acc = 0
     print(colored(f'Start training [{Config.results_dir}]', 'green'))
@@ -49,12 +48,8 @@ def train(classifier, train_dataloader, val_dataloader):
             if (epoch + 1) % Config.epochs_to_validate == 0:
                 val_accs = []
                 for val_img, val_label in val_dataloader:
-                    val_probs = classifier.predict(val_img)
-                    val_preds = np.argmax(val_probs, axis=-1)
-                    val_probs = np.max(val_probs, axis=-1)
-                    val_preds[val_probs < Config.threshold] = -1
-                    val_acc = closeset_acc(val_preds, val_label)
-                    val_accs.append(val_acc*100.)
+                    _, val_acc = classifier.evaluate(val_img, val_label, verbose=0)
+                    val_accs.append(val_acc)
 
                 tf.summary.scalar('val_acc', np.mean(val_accs), step=epoch)
 
@@ -83,35 +78,39 @@ def train(classifier, train_dataloader, val_dataloader):
 if __name__ == '__main__':
     os.makedirs(Config.results_dir, exist_ok=True)
     shutil.copyfile('config.py', f'{Config.results_dir}/config.py')
+
+    # Define model
+    ms = get_ms()
+    with ms.scope():
+        classifier = None
+        if Config.structure == ModelStructure.RESNET50:
+            classifier = Resnet50(Config).build_model()
+        elif Config.structure == ModelStructure.DEFORM:
+            classifier = DeformableClassifier(Config).build_model()
+        elif Config.structure == ModelStructure.SPNORM:
+            classifier = SpecNormClassifier(Config).build_model()
+        elif Config.structure == ModelStructure.CUSTOM:
+            classifier = CustomClassifier(Config).build_model()
+        else:
+            raise Exception("Not implemented model structure")
+        print(colored(f'Building classifier compeleted', 'green'))
+
+        if Config.classifier_weight_path:
+            classifier.load_weights(Config.classifier_weight_path)
+            print(colored(f'Loaded classifier weight from [{Config.classifier_weight_path}]', 'green'))
+
+    classifier.summary()
+
     # Load dataloaders
     if Config.use_tfds:
         train_dataloader, val_dataloader = get_train_dataloader(Config.dataset_name, Config)
         train_dataloader = iter(train_dataloader)
-        # val_dataloader = iter(val_dataloader)
+        val_dataloader = iter(val_dataloader)
     else:
-        ms = get_ms()
         dataloader = DataLoader(Config, ms)
         train_dataloader, val_dataloader = dataloader.get_train_dataloaders()
         train_dataloader = iter(train_dataloader)
         Config.num_steps = dataloader.train_len // dataloader.get_batch_size()
-
-    # Define model
-    classifier = None
-    if Config.structure == ModelStructure.VANILLA:
-        classifier = VanillaClassifier(Config).build_model()
-    elif Config.structure == ModelStructure.DEFORM:
-        classifier = DeformableClassifier(Config).build_model()
-    elif Config.structure == ModelStructure.SPNORM:
-        classifier = SpecNormClassifier(Config).build_model()
-    elif Config.structure == ModelStructure.CUSTOM:
-        classifier = CustomClassifier(Config).build_model()
-    else:
-        raise Exception("Not implemented model structure")
-    classifier.summary()
-
-    if Config.classifier_weight_path:
-        classifier.load_weights(Config.classifier_weight_path)
-        print(colored(f'Loaded classifier weight from [{Config.classifier_weight_path}]', 'green'))
+    print(colored(f'Loading dataloader compeleted', 'green'))
 
     train(classifier, train_dataloader, val_dataloader)
-    # test_opened(classifier, test_dataloader)

@@ -4,7 +4,7 @@ from keras.optimizers import Adam
 from keras.losses import categorical_crossentropy
 from keras.utils import multi_gpu_model
 
-from models.layers import conv2d, dense_branches, res_blocks
+from models.layers import dense_branches, res_blocks
 
 
 class CustomClassifier:
@@ -12,16 +12,12 @@ class CustomClassifier:
         self.config = config
 
     def define_model(self):
-        input_layer = Input(shape=self.config.input_shape)
-
-        # shared_conv = conv2d(input_layer, filters=self.config.shared_conv_channels[0],
-        #                      kernel_size=3, strides=2, use_sn=False, norm='bn', activation='lrelu',
-        #                      name=f'shared_conv_0')
+        img = Input(shape=self.config.input_shape)
 
         shared_conv = res_blocks(channels=self.config.shared_conv_channels,
                                  activation=self.config.activation,
                                  use_sn=True,
-                                 norm='in')(input_layer)
+                                 norm=None)(img)
 
         conv_flatten = Flatten()(shared_conv)
 
@@ -33,7 +29,7 @@ class CustomClassifier:
                              name='class'
                              )(conv_flatten)
 
-        return Model(input_layer, out, name='spec_norm_classifier')
+        return Model(img, out, name='custom_classifier')
 
     def build_model(self):
         model = self.define_model()

@@ -30,8 +30,9 @@ def load_train_img_fn(img_path, label, resize, crop, num_classes):
     return img, label
 
 
-def load_test_img_fn(img_path, label, resize, crop):
+def load_test_img_fn(img_path, label, resize, crop, num_classes):
     img = load_train_img_with_normalize(img_path, resize, crop)
+    label = tf.one_hot(label, depth=num_classes)
     return img, label
 
 
@@ -103,7 +104,8 @@ class DataLoader:
 
         load_val_fn = partial(load_test_img_fn,
                               resize=self._config.imagenet_resize,
-                              crop=self._config.imagenet_crop)
+                              crop=self._config.imagenet_crop,
+                              num_classes=self._config.num_classes)
         val_infos = []
         with open(self._config.val_txt_path) as f:
             for line in f:

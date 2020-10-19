@@ -5,7 +5,7 @@ from glob import glob
 import cv2
 
 from config import Config, ModelStructure
-from models.vanilla_classifier import VanillaClassifier
+from models.resnet50 import VanillaClassifier
 from models.deformable_classifier import DeformableClassifier
 
 

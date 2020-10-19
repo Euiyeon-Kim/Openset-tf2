@@ -5,7 +5,7 @@ class ModelStructure(Enum):
     def __str__(self):
         return '%s' % self.value
 
-    VANILLA = 'vanilla'
+    RESNET50 = 'resnet50'
     SENET = 'senet'
     SPNORM = 'spectral_norm'
     DEFORM = 'deformable'
@@ -14,19 +14,19 @@ class ModelStructure(Enum):
 
 class Config:
     # Model
-    structure = ModelStructure.CUSTOM
+    structure = ModelStructure.RESNET50
     kernel_size = 3
     strides = 2
     activation = 'lrelu'
     # Classifier
-    shared_conv_channels = [32, 64, 128, 256, 512]
+    shared_conv_channels = [128, 256, 256, 512, 512]
     dense_branch_units = [512, 256]
     # Deform
     deform_conv_channels = [32, 64, 128, 256, 512]
     deform_conv_offset_channels = [128, 256]
 
     # GradCAM
-    cam_layer = 'sn_9'
+    cam_layer = 'conv2d_52'
 
     # Basics
     n_gpus = 1
@@ -41,7 +41,7 @@ class Config:
 
     # Data
     n_workers = 8
-    batch_size = 96
+    batch_size = 32
     split_weight = (9, 1)
     input_shape = (224, 224, 3)               # Resize
     # TFDS
@@ -49,18 +49,18 @@ class Config:
     tfds_dir = 'data'
     dataset_name = 'cifar100'                  # TFDS dataset name
     # ImageNet
-    root_dir = 'data/hr-ting'
+    root_dir = 'data/imagenet'
+    train_txt_path = 'data/imagenet/imagenet2012_train_image_infos.txt'
+    val_txt_path = 'data/imagenet/imagenet2012_val_image_infos.txt'
+    # test_txt_path = 'data/hr-ting/hr-ting_test_infos.txt'
     openset_dir = 'data/imagenet_LT/ImageNet_LT_open'
-    train_txt_path = 'data/hr-ting/hr_ting_train.txt'
-    val_txt_path = 'data/hr-ting/hr_ting_val.txt'
-    test_txt_path = 'data/hr-ting/hr_ting_test.txt'
     openset_txt_path = 'data/imagenet_LT/imagenet_oltr_open.txt'
     num_classes = 1000
-    imagenet_resize = [256, 256]
+    imagenet_resize = [224, 224]
     imagenet_crop = [224, 224, 3]
 
     # Directories
-    results_dir = 'exps/hr_ting'
+    results_dir = 'exps/imagenet_resnet50'
     classifier_weight_path = None
 
     # Trainer

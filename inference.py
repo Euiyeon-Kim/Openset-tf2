@@ -2,7 +2,7 @@ import numpy as np
 from tqdm import tqdm
 
 from config import Config, ModelStructure
-from models.vanilla_classifier import VanillaClassifier
+from models.resnet50 import Resnet50
 from models.deformable_classifier import DeformableClassifier
 from dataloader.imagenet_dataloader import DataLoader
 from utils.utils import openset_acc, closeset_acc, get_ms
@@ -49,6 +49,11 @@ def test_closed(classifier, dataloader):
 
 
 if __name__ == '__main__':
+    from tensorflow import keras
+    a = keras.applications.resnet.ResNet50(include_top=True, weights=None, input_tensor=None, input_shape=None, pooling=None, classes=1000)
+    a.summary()
+    exit()
+
     # Label should be idx not one-hot vector
     ms = get_ms()
     dataloader = DataLoader(Config, ms)
@@ -56,8 +61,8 @@ if __name__ == '__main__':
 
     # Define model
     classifier = None
-    if Config.structure == ModelStructure.VANILLA:
-        classifier = VanillaClassifier(Config).build_model()
+    if Config.structure == ModelStructure.RESNET50:
+        classifier = Resnet50(Config).build_model()
     elif Config.structure == ModelStructure.DEFORM:
         classifier = DeformableClassifier(Config).build_model()
     else:
