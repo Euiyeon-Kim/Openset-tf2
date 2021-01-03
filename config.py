@@ -27,7 +27,7 @@ class Config:
     deform_conv_channels = [32, 64, 128, 256, 512]
     deform_conv_offset_channels = [128, 256]
 
-    # GradCAM
+    # GradCAM location
     cam_layer = 'conv2d_52'
 
     # Basics
@@ -37,13 +37,13 @@ class Config:
     epochs_to_save_weights = 2
 
     # Openset
-    test_with_openset = True
+    test_with_openset = False
     openset_rate = 0
     threshold = 0
 
     # Data
     n_workers = 8
-    batch_size = 32
+    batch_size = 128
     split_weight = (9, 1)
     input_shape = (224, 224, 3)               # Resize
     # TFDS

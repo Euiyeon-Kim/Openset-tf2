@@ -38,14 +38,10 @@ def fourier_transofrmation(img, r):
         lfc[:, :, i] = np.abs(np.fft.ifft2(low_f_ishift))
         hfc[:, :, i] = np.abs(np.fft.ifft2(high_f_ishift))
 
-    cv2.imshow('l', np.uint8(lfc))
-    cv2.imshow("h", np.uint8(hfc))
-    cv2.imshow("r", np.uint8(recover))
-    cv2.waitKey()
-
     return lfc, hfc
 
 
 if __name__ == '__main__':
     img = cv2.imread('../test.JPEG')
-    fourier_transofrmation(img, 32)
+    fourier_transofrmation(img, 8)
+

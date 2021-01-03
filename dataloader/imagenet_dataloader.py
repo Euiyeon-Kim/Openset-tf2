@@ -1,6 +1,7 @@
 import os
 from functools import partial
 
+import json
 import numpy as np
 import tensorflow as tf
 
@@ -22,6 +23,18 @@ def load_test_img_with_normalize(img_path, ratio):
     img = tf.image.central_crop(img, ratio)
     img = (img / 127.5) - 1
     return img
+
+
+def load_inference_img_with_normalize(img_path, label):
+    from tensorflow.keras.applications.resnet50 import preprocess_input
+    img = tf.io.read_file(img_path)
+    img = tf.image.decode_jpeg(img, channels=3)         # output an RGB image
+    img = tf.cast(img, tf.float32)
+    img = tf.image.resize(img, (224, 224))
+    x = preprocess_input(img)
+    [103.939, 116.779, 123.68]
+    label = tf.one_hot(label, depth=1000)
+    return x, label
 
 
 def load_train_img_fn(img_path, label, resize, crop, num_classes):
@@ -46,6 +59,7 @@ class DataLoader:
         self.train_infos = []
         self.closed_test_len = 0
         self.opend_test_len = 0
+        self.cvt_label_dict = json.load(open('../data/cvt_label.json'))
 
     def _train_data_generator(self, infos):
         while True:
@@ -74,6 +88,20 @@ class DataLoader:
                 path = f'{self._config.openset_dir}/{path}'
             if os.path.isfile(path):
                 yield path, int(label)
+
+    def _infer_data_generator(self, infos):
+        from tensorflow.keras.preprocessing import image
+        from tensorflow.keras.applications.resnet50 import preprocess_input
+        np.random.shuffle(infos)
+        for info in infos:
+            path, label = info.split(' ')
+            path = f'../{self._config.root_dir}/{path}'
+
+            img = image.load_img(path, target_size=(224, 224))
+            x = image.img_to_array(img)
+            x = preprocess_input(x)
+
+            yield x, int(self.cvt_label_dict[label[:-1]])
 
     def _dataset_from_generator(self, data_generator, load_fn, repeat=True, drop_remainder=True):
         ds = tf.data.Dataset.from_generator(data_generator,
@@ -138,6 +166,24 @@ class DataLoader:
 
         test_ds = self._dataset_from_generator(test_data_generator, load_fn, repeat=False, drop_remainder=False)
         return test_ds
+
+    def get_infer_dataloaders(self):
+        train_infos = []
+        with open('../data/imagenet/imagenet2012_val_image_infos.txt') as f:
+            for line in f:
+                train_infos.append(line)
+            self.train_len = len(train_infos)
+
+        infer_data_generator = partial(self._infer_data_generator, infos=train_infos)
+        ds = tf.data.Dataset.from_generator(infer_data_generator,
+                                            output_types=(tf.float32, tf.int32),
+                                            output_shapes=((224, 224, 3), ()))
+
+        ds = ds.batch(self.get_batch_size(), drop_remainder=False)
+        ds = ds.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+        if self._ms is not None:
+            ds = self._ms.experimental_distribute_dataset(ds)
+        return ds
 
     def get_batch_size(self):
         if self._ms is None:
