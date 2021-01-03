@@ -1,6 +1,5 @@
 from keras.models import Model
-from keras.layers import Input, GlobalAveragePooling2D, ZeroPadding2D, Conv2D, BatchNormalization, Activation, MaxPooling2D, Add, Dense
-from tensorflow_addons.layers import InstanceNormalization
+from keras.layers import Input, GlobalAveragePooling2D, ZeroPadding2D, MaxPooling2D, Add, Dense
 from keras.optimizers import Adam
 from keras.losses import categorical_crossentropy
 from keras.utils import multi_gpu_model

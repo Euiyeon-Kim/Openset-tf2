@@ -5,7 +5,7 @@ from glob import glob
 import cv2
 
 from config import Config, ModelStructure
-from models.resnet50 import VanillaClassifier
+from models.resnet50 import Resnet50
 from models.deformable_classifier import DeformableClassifier
 
 
@@ -15,7 +15,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if Config.structure == ModelStructure.VANILLA:
-        classifier = VanillaClassifier(Config).build_model()
+        classifier = Resnet50(Config).build_model()
     elif Config.structure == ModelStructure.DEFORM:
         classifier = DeformableClassifier(Config).build_model()
     else:

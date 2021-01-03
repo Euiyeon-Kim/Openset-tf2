@@ -34,7 +34,7 @@ def test_opened(classifier, dataloader):
 
     print(f'\nClosed-set classification accuracy : {np.mean(close_accs)}')
     print(f'Open-set classification accuracy(Total: {openset_lengths}, Detected: {detected_as_openset_lengths}) : {np.mean(open_accs)}')
-    print(f'Total classification accuracy : {np.mean(total_accs)}')
+    print(f'Total  classification accuracy : {np.mean(total_accs)}')
 
 
 def test_closed(classifier, dataloader):
@@ -46,6 +46,30 @@ def test_closed(classifier, dataloader):
         acc = closeset_acc(preds, label)
         total_accs.append(acc)
     print(f'Total classification accuracy : {np.mean(total_accs)}')
+
+
+def test_keras_resnet50():
+    from glob import glob
+    from tensorflow.keras.preprocessing import image
+    from tensorflow.keras.applications import ResNet50
+    from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
+
+    model = ResNet50(weights='imagenet')
+    img_paths = sorted(glob('data/imagenet/train/*/*.JPEG'))
+    print(len(img_paths))
+    total_sample = len(img_paths)
+    correct = 0
+    for path in tqdm(img_paths):
+        img = image.load_img(path, target_size=(224, 224))
+        x = image.img_to_array(img)
+        x = np.expand_dims(x, axis=0)
+        x = preprocess_input(x)
+        preds = model.predict(x)
+        wnid = path.split('/')[3]
+        pred_wnid, _, _ = decode_predictions(preds, top=1)[0][0]
+        if pred_wnid == wnid:
+            correct += 1
+    print(correct / total_sample)
 
 
 if __name__ == '__main__':

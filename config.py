@@ -13,7 +13,7 @@ class ModelStructure(Enum):
 
 
 class Config:
-    exp_name = 'imagenet_resnet50_in'
+    exp_name = 'rm'
 
     # Model
     structure = ModelStructure.RESNET50
