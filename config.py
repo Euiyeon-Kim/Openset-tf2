@@ -13,7 +13,7 @@ class ModelStructure(Enum):
 
 
 class Config:
-    exp_name = 'rm'
+    exp_name = 'distinct'
 
     # Model
     structure = ModelStructure.RESNET50
@@ -28,7 +28,7 @@ class Config:
     deform_conv_offset_channels = [128, 256]
 
     # GradCAM location
-    cam_layer = 'conv2d_52'
+    cam_layer = 'top_conv'
 
     # Basics
     n_gpus = 1
@@ -43,7 +43,7 @@ class Config:
 
     # Data
     n_workers = 8
-    batch_size = 128
+    batch_size = 32
     split_weight = (9, 1)
     input_shape = (224, 224, 3)               # Resize
     # TFDS
@@ -52,14 +52,13 @@ class Config:
     dataset_name = 'cifar100'                  # TFDS dataset name
     # ImageNet
     root_dir = 'data/imagenet'
-    train_txt_path = 'data/imagenet/imagenet2012_train_image_infos.txt'
-    val_txt_path = 'data/imagenet/imagenet2012_val_image_infos.txt'
-    # test_txt_path = 'data/hr-ting/hr-ting_test_infos.txt'
+    train_txt_path = 'data/imagenet/poc_distinct_train_infos.txt'
+    val_txt_path = 'data/imagenet/poc_distinct_val_infos.txt'
+    test_txt_path = 'data/imagenet/poc_distinct_test_infos.txt'
     openset_dir = 'data/imagenet_LT/ImageNet_LT_open'
     openset_txt_path = 'data/imagenet_LT/imagenet_oltr_open.txt'
-    num_classes = 1000
+    num_classes = 20
     imagenet_resize = [224, 224]
-    imagenet_crop = [224, 224, 3]
 
     # Directories
     results_dir = f'exps/{exp_name}'

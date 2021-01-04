@@ -89,7 +89,7 @@ class DataLoader:
             if os.path.isfile(path):
                 yield path, int(label)
 
-    def _infer_data_generator(self, infos):
+    def _infer_data_generator(self, infos, fourier=False, r=4, mode='low'):
         from tensorflow.keras.preprocessing import image
         from tensorflow.keras.applications.resnet50 import preprocess_input
         np.random.shuffle(infos)
@@ -99,7 +99,8 @@ class DataLoader:
 
             img = image.load_img(path, target_size=(224, 224))
             x = image.img_to_array(img)
-            x = preprocess_input(x)
+            x = (x / 127.5) - 1
+            # x = preprocess_input(x)
 
             yield x, int(self.cvt_label_dict[label[:-1]])
 
@@ -167,14 +168,15 @@ class DataLoader:
         test_ds = self._dataset_from_generator(test_data_generator, load_fn, repeat=False, drop_remainder=False)
         return test_ds
 
-    def get_infer_dataloaders(self):
+    def get_infer_dataloaders(self, fourier=False, r=4, mode='low'):
         train_infos = []
         with open('../data/imagenet/imagenet2012_val_image_infos.txt') as f:
             for line in f:
                 train_infos.append(line)
             self.train_len = len(train_infos)
 
-        infer_data_generator = partial(self._infer_data_generator, infos=train_infos)
+        data_generator = partial(self._infer_data_generator, fourier=fourier, r=r, mode=mode)
+        infer_data_generator = partial(data_generator, infos=train_infos)
         ds = tf.data.Dataset.from_generator(infer_data_generator,
                                             output_types=(tf.float32, tf.int32),
                                             output_shapes=((224, 224, 3), ()))

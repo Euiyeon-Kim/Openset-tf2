@@ -1,3 +1,6 @@
+import os
+from glob import glob
+
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
@@ -13,35 +16,52 @@ def get_threshold_mask(h, w, r):
     return mask
 
 
-def fourier_transofrmation(img, r):
+def fourier_transofrmation(img, r, mode='low'):
     h, w, c = img.shape
     mask = get_threshold_mask(h, w, r)
-    recover = np.zeros_like(img)
+    spectrum = np.zeros_like(img)
     lfc = np.zeros_like(img)
     hfc = np.zeros_like(img)
+
     for i in range(c):
         origin = img[:, :, i]
-
-        # Fourier transformation
         f = np.fft.fft2(origin)
         f_shift = np.fft.fftshift(f)
+        spectrum[:, :, i] = 20 * np.log(np.abs(f_shift))
 
-        # Thresholding
         low_masked = np.multiply(f_shift, mask)
-        high_masked = f_shift * (1 - mask)
-
-        f_ishift = np.fft.ifftshift(f_shift)
         low_f_ishift = np.fft.ifftshift(low_masked)
-        high_f_ishift = np.fft.ifftshift(high_masked)
-
-        recover[:, :, i] = np.real(np.fft.ifft2(f_ishift))
         lfc[:, :, i] = np.abs(np.fft.ifft2(low_f_ishift))
-        hfc[:, :, i] = np.abs(np.fft.ifft2(high_f_ishift))
 
-    return lfc, hfc
+        high_masked = f_shift * (1 - mask)
+        high_f_ishift = np.fft.ifftshift(high_masked)
+        hfc[:, :, i] = np.abs(np.fft.ifft2(high_f_ishift))
+        # f_ishift = np.fft.ifftshift(f_shift)
+        # recover[:, :, i] = np.real(np.fft.ifft2(f_ishift))
+
+    if mode == 'lfc':
+        return lfc
+    elif mode == 'hfc':
+        return hfc
+    else:
+        return spectrum, lfc, hfc
 
 
 if __name__ == '__main__':
-    img = cv2.imread('../test.JPEG')
-    fourier_transofrmation(img, 8)
+    classes = (os.listdir('../data/imagenet/train'))[13:]
+
+    for wnid in classes:
+        paths = glob(f'../data/imagenet/train/{wnid}/*')[:20]
+        lfcs = np.zeros(256)
+        hfcs = np.zeros(256)
+        for path in paths:
+            img = cv2.imread(path)
+            spec, lfc, hfc = fourier_transofrmation(img, r=16, mode='both')
+            cv2.imshow("spec", np.uint8(spec))
+            cv2.imshow("origin", img)
+            cv2.imshow("l", lfc)
+            cv2.imshow("h", hfc)
+            cv2.waitKey()
+
+        exit()
 
