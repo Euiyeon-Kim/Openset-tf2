@@ -9,6 +9,13 @@ from matplotlib import pyplot as plt
 
 from config import Config
 
+DISTINCT = ['n02129604', 'n04086273', 'n04254680', 'n07745940', 'n02690373', 'n03796401', 'n12620546', 'n11879895',
+            'n02676566', 'n01806143', 'n02007558', 'n01695060', 'n03532672', 'n03065424', 'n03837869', 'n07711569',
+            'n07734744', 'n03676483', 'n09229709', 'n07831146']
+
+SIMILAR = ['n02100735', 'n02110185', 'n02096294', 'n02417914', 'n02110063', 'n02089867', 'n02102177', 'n02092339',
+           'n02098105', 'n02105641', 'n02096051', 'n02110341', 'n02086910', 'n02113712', 'n02113186', 'n02091467',
+           'n02106550', 'n02091831', 'n02104365', 'n02086079']
 
 if __name__ == '__main__':
     meta = io.loadmat('data/meta.mat')
@@ -55,6 +62,7 @@ if __name__ == '__main__':
     #     confirm = os.path.isdir(f'data/imagenet/train/{wnid}')
     #     os.makedirs(f'data/imagenet/val/{wnid}', exist_ok=True)
     #     shutil.move(path, f'data/imagenet/val/{wnid}')
+
 
     val_paths = sorted(glob('data/imagenet/val/*/*.JPEG'))
     with open('data/imagenet/imagenet2012_val_image_infos.txt', 'w') as f:

@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.losses import categorical_crossentropy
 from tensorflow.keras.utils import multi_gpu_model
 
@@ -88,17 +88,15 @@ if __name__ == '__main__':
     Config.num_steps = dataloader.train_len // dataloader.get_batch_size()
 
     with ms.scope():
-        model = tf.keras.applications.EfficientNetB0(
+        model = tf.keras.applications.ResNet50(
             include_top=True,
             weights=None,
-            input_tensor=None,
-            input_shape=None,
+            input_shape=(224, 224, 3),
             pooling=None,
-            classes=20,
-            classifier_activation="softmax",
+            classes=Config.num_classes
         )
         parallel_model = multi_gpu_model(model, gpus=Config.n_gpus) if Config.n_gpus > 1 else model
-        optimizer = Adam(Config.lr, Config.beta1, Config.beta2, decay=0.01 / 30000)
+        optimizer = RMSprop(learning_rate=Config.lr, momentum=0.9)
         model.compile(optimizer=optimizer,
                       loss={"predictions": categorical_crossentropy},
                       metrics={"predictions": "accuracy"})

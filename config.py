@@ -13,7 +13,7 @@ class ModelStructure(Enum):
 
 
 class Config:
-    exp_name = 'distinct'
+    exp_name = 'similar_G_12_lfc'
 
     # Model
     structure = ModelStructure.RESNET50
@@ -28,13 +28,13 @@ class Config:
     deform_conv_offset_channels = [128, 256]
 
     # GradCAM location
-    cam_layer = 'top_conv'
+    cam_layer = 'conv5_block3_out'
 
     # Basics
     n_gpus = 1
     epochs_to_validate = 1
     epochs_to_save_gradCAM = 1
-    epochs_to_save_weights = 2
+    epochs_to_save_weights = 10
 
     # Openset
     test_with_openset = False
@@ -51,10 +51,10 @@ class Config:
     tfds_dir = 'data'
     dataset_name = 'cifar100'                  # TFDS dataset name
     # ImageNet
-    root_dir = 'data/imagenet'
-    train_txt_path = 'data/imagenet/poc_distinct_train_infos.txt'
-    val_txt_path = 'data/imagenet/poc_distinct_val_infos.txt'
-    test_txt_path = 'data/imagenet/poc_distinct_test_infos.txt'
+    root_dir = 'data/imagenet_freq_similar/G_12_lfc'
+    train_txt_path = 'data/imagenet_freq_similar/poc_similar_train_infos.txt'
+    val_txt_path = 'data/imagenet_freq_similar/poc_similar_val_infos.txt'
+    test_txt_path = 'data/imagenet_freq_similar/poc_similar_test_infos.txt'
     openset_dir = 'data/imagenet_LT/ImageNet_LT_open'
     openset_txt_path = 'data/imagenet_LT/imagenet_oltr_open.txt'
     num_classes = 20
@@ -65,8 +65,6 @@ class Config:
     classifier_weight_path = None
 
     # Trainer
-    num_epochs = 1000
-    lr = 1e-4
-    beta1 = 0.5
-    beta2 = 0.999
+    num_epochs = 100
+    lr = 1e-3
 
